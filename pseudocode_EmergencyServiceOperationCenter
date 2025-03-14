@@ -1,0 +1,10 @@
+import json
+
+message = {
+    "street":"CorsoFrancia",
+    "direction":"NS",
+}
+
+mqtt.publish("emergency","message")
+# Far sì che l'LCD sottoscriva al topic emergency e mandi un warning "AMBULANCE" quando
+# l'ambulanza sta arrivando

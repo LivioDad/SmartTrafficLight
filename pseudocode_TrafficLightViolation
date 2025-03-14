@@ -1,0 +1,29 @@
+# Sottoscrive al topic a cui il LED manager manda a ogni variazione lo stato del semaforo.
+# Per semplicità e mancanza di hw, ipotizziamo che il controllo avvenga solo a un incrocio e 
+# solo in una direzione di marcia (NS)
+status = mqtt.subscribe("semaforo")
+
+def POST():
+    pass
+
+while status == "red":
+
+    presence = mqtt.subscribe("car_presence")
+
+    if status == "red" and presence == "true":
+        timestamp = time.now()
+        plate = np.random(targa)
+
+        infraction_json = {
+            "timestamp": timestamp,
+            "plate": plate,
+            "infraction": "red_light",
+            "location": "CorsoFrancia-NS"
+        }
+        
+        POST(infraction_json,"database_adaptor")
+
+
+# Quando viene runnato il tutto questo script deve andare a recuperare dal resource catalog
+# l'IP del database_adaptor e il topic del LED manager a cui iscriversi e al tipic del vehicle
+# presence sensor.
