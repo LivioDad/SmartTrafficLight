@@ -1,0 +1,9 @@
+{
+	"lastUpdate": 0,
+	"base_topic": "SmartTrafficLight",
+	"broker": {
+		"name": "test.mosquitto.org",
+		"port": 1883
+	},
+	"resourcesList": []
+}

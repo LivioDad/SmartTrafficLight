@@ -1,0 +1,7 @@
+{
+    "broker": "test.mosquitto.org",
+    "broker_port": 1883,
+    "ip_address":"192.168.1.171",
+    "ip_port": "9090",
+    "base_topic": "SmartTrafficLight"
+}
