@@ -1,16 +1,13 @@
-from gpiozero import LED, Button
 import time
-from MyMQTT import MyMQTT
 import json
+from MyMQTT import MyMQTT
+from gpiozero import LED
 
 # MQTT Configuration
 BROKER = "mqtt.eclipseprojects.io"
 PORT = 1883
-CLIENT_ID = "Button_Press_01"
-TOPIC = "/button/press"
-
-# Set the GPIO pin for the button
-BUTTON_PIN = 23 
+CLIENT_ID = "LED_Control_01"
+TOPIC = "/button/press"  # Listening for button press messages
 
 # Define the LEDs on pins 5, 6, 7, and 8
 ledg1 = LED(5)  # Green LED 1 (pin 5)
@@ -18,56 +15,42 @@ ledr1 = LED(6)  # Red LED 1 (pin 6)
 ledg2 = LED(8)  # Green LED 2 (pin 8)
 ledr2 = LED(7)  # Red LED 2 (pin 7)
 
-# Create a button object
-button = Button(BUTTON_PIN)
-
-# Initialize the MQTT publisher
-class ButtonPublisher:
-    def __init__(self, clientID, broker, port):
+class LEDSubscriber:
+    def __init__(self, clientID, broker, port, topic):
+        """Initializes the MQTT client and LED control."""
         self.clientID = clientID
         self.broker = broker
         self.port = port
-        self.MQTTClient = MyMQTT(clientID, broker, port, None)
-    
+        self.topic = topic
+
+        # Configure MQTT client
+        self.MQTTClient = MyMQTT(clientID, broker, port, self)
+
     def start(self):
+        """Starts the MQTT connection and subscribes to the topic."""
         self.MQTTClient.start()
+        self.MQTTClient.mySubscribe(self.topic)
 
     def stop(self):
+        """Stops the MQTT connection."""
         self.MQTTClient.stop()
 
-    def publish_button_press(self):
-        timestamp = time.time()
-        message = {
-            "bn": f"{self.clientID}/button",
-            "e": [{
-                "n": "button_press",
-                "u": "boolean",
-                "t": timestamp,
-                "v": True  # Button pressed
-            }]
-        }
-        self.MQTTClient.myPublish(TOPIC, message)
-        print(f"Published to {TOPIC}: {json.dumps(message)}")
+    def notify(self, topic, payload):
+        """Callback function triggered when an MQTT message is received."""
+        try:
+            message_decoded = json.loads(payload)  # Decode JSON message
+            if "e" in message_decoded and len(message_decoded["e"]) > 0:
+                event = message_decoded["e"][0]  # Extract event data
+                if event["n"] == "button_press" and event["v"]:  
+                    print("📩 Button Press Detected!")
+                    
+                    # Perform the LED cycle (semaphore logic)
+                    self.perform_led_cycle()
+        except Exception as e:
+            print(f"⚠ Error processing message: {e}")
 
-# Start the MQTT client
-publisher = ButtonPublisher(CLIENT_ID, BROKER, PORT)
-publisher.start()
-
-# Track the last time a message was sent
-last_message_time = 0
-
-# Function for when the button is pressed
-def on_button_press():
-    global last_message_time
-    current_time = time.time()
-
-    # Only publish if at least 1 second has passed since the last message
-    if current_time - last_message_time >= 1:
-        print("Button pressed!")
-        publisher.publish_button_press()  # Publish MQTT message when button is pressed
-        last_message_time = current_time  # Update the last message time
-
-        # Now control the LEDs in the desired sequence (only after button press)
+    def perform_led_cycle(self):
+        """Performs the LED traffic light cycle."""
         # r1 + g2 for 2 seconds
         ledr1.on()
         ledg2.on()
@@ -87,15 +70,15 @@ def on_button_press():
         ledg1.off()
         print("All LEDs off")
 
-# Connect the functions to the button press event
-button.when_pressed = on_button_press
+# Initialize and start the LED MQTT subscriber
+led_subscriber = LEDSubscriber(CLIENT_ID, BROKER, PORT, TOPIC)
+led_subscriber.start()
 
 try:
     while True:
-        # Continuously monitor the button
-        time.sleep(0.1)  # Slightly reduce the sleep time to keep responsiveness high
+        time.sleep(1)  # Keep the script running and listening for messages
 
 except KeyboardInterrupt:
-    print("Program interrupted.")
-finally:
-    publisher.stop()
+    print("\nStopping LED MQTT Subscriber...")
+    led_subscriber.stop()
+    print("Stopped.")

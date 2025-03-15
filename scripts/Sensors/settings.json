@@ -1,0 +1,14 @@
+{
+    "catalogURL": "http://localhost:80",
+    "ThingspeakURL": "https://api.thingspeak.com/update?api_key=",
+    "ChannelWriteAPIkey": "OZE16MN9OFK84P8Y",
+    "ChannelReadAPIKey": "BTP4K708D2767EMW",
+    "brokerIP": "mqtt.eclipseprojects.io",
+    "brokerPort": 1883,
+    "mqttTopic":"/sensor",
+    "serviceInfo": {
+        "ID": 3,
+        "serviceName": "ThingspeakAdaptor",
+        "last_updated": ""
+    }
+}

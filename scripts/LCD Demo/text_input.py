@@ -1,6 +1,6 @@
 import time
 import json
-from LCD import LCD
+from LCD_config import LCD
 from MyMQTT import MyMQTT
 
 # MQTT broker configuration

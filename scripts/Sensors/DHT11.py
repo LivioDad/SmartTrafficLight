@@ -79,7 +79,7 @@ def read_dht11_data():
 try:
     while True:
         read_dht11_data()  # Read data from the DHT11 sensor
-        time.sleep(2)  # Wait for 2 seconds before the next reading
+        time.sleep(5)  # Wait for 5 seconds before the next reading
 
 except KeyboardInterrupt:
     print("Program interrupted.")
