@@ -1,0 +1,16 @@
+{
+    "ID": 888,
+    "Name": "LedManagerA",
+    "Type": "LedManager",
+    "zone": "A",
+    "availableServices": [
+        "MQTT"
+    ],
+    "serviceDetails": [
+        {
+            "serviceType": "MQTT",
+            "topicS": "SmartTrafficLight/Sensor/A/#",
+            "topicP": "SmartTrafficLight/Led/A"
+        }
+    ]
+}
