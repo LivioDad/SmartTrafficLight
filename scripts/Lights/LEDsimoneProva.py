@@ -30,15 +30,22 @@ class LEDLights:
         self.topic = info["servicesDetails"][0]["topic"] # topic dedicated to led
         self.topic_zone = info["servicesDetails"][0]["topic_zone"] # topic common to all zone
         self.clientID = info["Name"]
-        self.timer = info["timer"]  # Timer
         self.cycle = info["standard_duty_cycle"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
 
+        #intersection 1
 
-        self.car_led1 = LED(24)  # Car green light
-        self.car_led2 = LED(22)  # Car red light
-        self.ped_led1 = LED(23)  # Pedestrian green light
-        self.ped_led2 = LED(18)  # Pedestrian red light
+        self.car_led1green = LED(24)  # Car green light
+        self.car_led1red = LED(22)  # Car red light
+        self.ped_led1green = LED(23)  # Pedestrian green light
+        self.ped_led1red = LED(18)  # Pedestrian red light
+
+        #intersection2
+
+        self.car_led2green = LED()  # Car green light
+        self.car_led2red = LED()  # Car red light
+        self.ped_led2green = LED()  # Pedestrian green light
+        self.ped_led2red = LED()  # Pedestrian red light
 
         # LED functioning control sensor
         self.led_ctrl = Adafruit_DHT.DHT11  # Temperature & humidity sensor
@@ -74,54 +81,77 @@ class LEDLights:
     def notify(self, topic, payload):
         payload = json.loads(payload)
         print(f'Message received: {payload}\n Topic: {topic}')
+        cycle = self.cycle  # Default cycle
+        emergency = False
+        intersection = None
         if topic == self.topic_zone + '/1':
             # /1 we are in the first intersection
+            intersection = 1
             if payload["e"]["v"] == 'vulnerable_pedestrian':
             #do what you need to do with the lights in the intersection 1 when a vulnerable pedestrian is detected
-            #ex : self.led_cycle_vulnerable_pedestrian()
-                pass
+                cycle = 10 
             elif payload["e"]["v"] == 'pedestrian':
             #do what you need to do with the lights in the intersection 1 when a pedestrian is detected
-                pass
+                cycle = 7
             elif payload["e"]["v"] == 'car_infraction':
             #put a variable infraction to true
                 pass
 
         elif topic == self.topic_zone + '/2':
             # /2 we are in the second intersection
+            intersection = 2
             if payload["e"]["v"] == 'vulnerable_pedestrian':
             #do what you need to do with the lights in the intersection 1 when a vulnerable pedestrian is detected
-            #ex : self.led_cycle_vulnerable_pedestrian()
-                pass
+                cycle = 10
             elif payload["e"]["v"] == 'pedestrian':
             #do what you need to do with the lights in the intersection 1 when a pedestrian is detected
-                pass
+                cycle = 7
             elif payload["e"]["v"] == 'car_infraction':
             #put a variable infraction to true
                 pass
-        self.standard_led_cycle() #regular led cycle based on timer
 
-    def standard_led_cycle(self):
-        # Start regular functioning cycle
-        timer = self.timer #total time the led works
-        while timer > 0:
-            timer -= self.cycle #timer - (how long green/red last in a led, in standard situations)
-            time.sleep(self.cycle) #pause the program for a cycle, representing the time a led stays in a state
-            if self.car_led1.is_lit: #if the green for the cars is on:
-                self.car_led1.off() #turn off car green
-                self.car_led2.on()#turn on car red
-                self.ped_led1.on()#turn on pedestrian green
-                self.ped_led2.off()#turn on car red
+        elif topic == self.topic + '/emergency':
+            #emergency in the intersection 1 and 2
+            emergency = True
 
-            else:#if the green for cars is off (meaning its red):
-                self.car_led1.on() #turn on green for cars
-                self.car_led2.off() #turn off red for cars
-                self.ped_led1.off()#turn off green for pedestrians
-                self.ped_led2.on()#turn on red for pedestrians
+        self.led_cycle_v2(cycle = cycle ,emergency= emergency, intersection = intersection ) #regular led cycle
 
-            #do the same for the other intersection
 
-        
+    def led_cycle_v2(self ,intersection ,  cycle, emergency):
+
+        if emergency:
+            print("EMERGENCY!")
+            for i in [1, 2]:
+                getattr(self, f"car_led{i}green").on()
+                getattr(self, f"car_led{i}red").off()
+                getattr(self, f"ped_led{i}green").off()
+                getattr(self, f"ped_led{i}red").on()
+            time.sleep(20)
+
+        car_green = getattr(self, f"car_led{intersection}green", None)
+        car_red = getattr(self, f"car_led{intersection}red", None)
+        ped_green = getattr(self, f"ped_led{intersection}green", None)
+        ped_red = getattr(self, f"ped_led{intersection}red", None)
+
+        if None in (car_green, car_red, ped_green, ped_red):
+            print(f"Error: LED of intersection {intersection} not found.")
+            return
+
+        while True:
+            time.sleep(cycle)
+            if car_green.is_lit:
+                car_green.off()
+                car_red.on()
+                ped_green.on()
+                ped_red.off()
+
+            else:
+                car_green.on()
+                car_red.off()
+                ped_green.off()
+                ped_red.on()
+
+
     def thingspeak_post(self, val): #non so come funziona Thingspeak :)
         URL = self.base_url #This is unchangeble
         KEY = self.key #This is the write key API of your channels

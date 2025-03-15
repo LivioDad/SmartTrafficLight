@@ -9,7 +9,6 @@
 		"topic": "SmartTrafficLight/Led/A/#",
 		"topic_zone": "SmartTrafficLight/Led/A"
 	}],
-	"timer": 100,
 	"standard_duty_cycle": 5,
 	"Thingspeak": {
 		"base_url": "https://api.thingspeak.com/update?api_key=",
