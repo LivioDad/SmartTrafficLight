@@ -9,7 +9,7 @@ import Adafruit_DHT
 import threading
 import urllib.request
 
-#led its just a subscriber, subscribet to twp different topics depending on what you need to do with the lights
+#led its just a subscriber, subscribe to two different topics depending on what you need to do with the lights
 # general topic for cars , and specific topic for pedestrian button 
 
 #reads what LedManager sends and act depending on it
@@ -176,6 +176,7 @@ class LEDLights:
 
 if __name__ == '__main__':
     #bisogna essere sicuri che il file resource_catalog_info.json sia accesibile anche se è in un'altra cartella
+    # Riposta: per questo si dovrebbe poter usare la libreria os
     led = LEDLights('LEDsimoneProvaInfo.json', 'resource_catalog_info.json')
 
     b = threading.Thread(name='background', target=led.background)

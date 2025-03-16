@@ -4,6 +4,7 @@ from MyMQTT import *
 import random
 import time
 import uuid
+import os
 
 class Thingspeak_Adaptor:
     def __init__(self,settings):
@@ -66,7 +67,9 @@ class Thingspeak_Adaptor:
         return r.text
     
 if __name__ == "__main__":
-    settings= json.load(open(r"/home/liviodad/Desktop/myenv/scripts/Sensors/settings.json"))
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Find the directory of the script
+    settings_path = os.path.join(script_dir, "settings.json")  # Build path to JSON file
+    settings = json.load(open(settings_path))  # Load JSON file
     ts_adaptor=Thingspeak_Adaptor(settings)
     # ts_adaptor.registerService()
     try:

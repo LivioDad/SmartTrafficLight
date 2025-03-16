@@ -53,7 +53,7 @@ class LedManager:
 
     def notify(self, topic, payload):
         '''
-        when it receives a message from a sensors, the message is processed, the message is in the form:
+        when it receives a message from a sensor, the message is processed, the message is in the form:
         msg = {
             "bn": self.clientID (identifies the sensor that sended the message its in the .json file of the sensor),
             "e": {
