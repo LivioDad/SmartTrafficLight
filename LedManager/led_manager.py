@@ -23,6 +23,7 @@ class LedManager:
             if s["serviceType"]=='MQTT':
                 self.topicS = s["topicS"] #topic to which it is subscribed to receive messages from sensors
                 self.topicP = s["topicP"] #topic on which it publishes messages for the acrivations of leds
+                self.topicE = s["topicE"] #topic on which it publishes messages for the acrivations of leds in emergency cases
         self.clientID = info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self) #configure MQTT
 
@@ -44,6 +45,7 @@ class LedManager:
         time.sleep(3)  # Timer of 3 second (to deal with asynchronous)
         #useful to avoid the risk of subscribung to a topic before the connection with the broker starts
         self.client.mySubscribe(self.topicS)  #subscribe to subscribeTopic (to receive all messages from sensor in A zone)
+        self.client.mySubscribe(self.topicE)  
 
     # Method to UNSUBSCRIBE and STOP
     def stop(self):
@@ -65,29 +67,48 @@ class LedManager:
         }
 
         '''
-        messageReceived = json.loads(payload)
-        bn = messageReceived["bn"] #identifies the sensor that sended the message
-        id = bn.split('_')
-        sensorType = id[1] #sensor type (b for the button , c for the movement sensor)
-        trafficLightID = id[2] #id of the Led associated to the sensor (1 or 2 depending on the intersection)
-        obj = 0
-        if messageReceived["e"]["n"] == "vul_button": #if the message its from a button (vulnerable pedestrian)
-            obj = "vulnerable_pedestrian"
-            if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
-                specific_topic = self.topicP + '/' + trafficLightID
-                self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a vulnerable pedestrian
+        if topic == self.topicS:
+            messageReceived = json.loads(payload)
+            bn = messageReceived["bn"] #identifies the sensor that sended the message
+            id = bn.split('_')
+            sensorType = id[1] #sensor type (b for the button , c for the movement sensor)
+            trafficLightID = id[2] #id of the Led associated to the sensor (1 or 2 depending on the intersection)
+            obj = 0
+            if messageReceived["e"]["n"] == "vul_button": #if the message its from a button (vulnerable pedestrian)
+                obj = "vulnerable_pedestrian"
+                if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
+                    specific_topic = self.topicP + '/' + trafficLightID
+                    self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a vulnerable pedestrian
 
-        elif messageReceived["e"]["n"] == "ped_sens": #if the message its from a movement sensor (pedestrian)
-            obj = "pedestrian"
-            if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
-                specific_topic = self.topicP + '/' + trafficLightID
-                self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a pedestrian
+            elif messageReceived["e"]["n"] == "ped_sens": #if the message its from a movement sensor (pedestrian)
+                obj = "pedestrian"
+                if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
+                    specific_topic = self.topicP + '/' + trafficLightID
+                    self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a pedestrian
 
-        elif messageReceived["e"]["n"] == "mov_sens": #if the message its from a button (infraction)
-            obj = "car_infraction"
-            if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
-                specific_topic = self.topicP + '/' + trafficLightID
-                self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a car infraction
+            elif messageReceived["e"]["n"] == "mov_sens": #if the message its from a button (infraction)
+                obj = "car_infraction"
+                if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
+                    specific_topic = self.topicP + '/' + trafficLightID
+                    self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a car infraction
+
+        elif topic == self.topicE:
+            messageReceived = json.loads(payload)
+            direction = messageReceived["e"]["n"]
+            zone = messageReceived["bn"]
+            msg = {
+                "bn": zone,
+                "e": {
+                    "n": "emergency",
+                    "u": "direction",
+                    "t": time.time(),
+                    "v": direction
+                }
+            }
+            self.client.myPublish(self.topicP, msg)
+            print("published\n" + json.dumps(msg) + '\nOn topic: ' + f'{self.topicP}')
+            
+
 
 
     def publish(self, topicP, obj):

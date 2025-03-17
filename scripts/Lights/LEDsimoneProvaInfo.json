@@ -10,9 +10,7 @@
 		"topic_zone": "SmartTrafficLight/Led/A"
 	}],
 	"standard_duty_cycle": 5,
-	"Thingspeak": {
-		"base_url": "https://api.thingspeak.com/update?api_key=",
-		"key": "LB7Y8LZTC7GIYP8L",
-		"url_read": "https://thingspeak.com/channels/2098201"
-	}
+	"emergency_duty_cycle": 20,
+	"pedestrian_duty_cycle": 7,
+	"vulnerable_road_users_duty_cycle": 10
 }

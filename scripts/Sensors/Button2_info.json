@@ -1,0 +1,15 @@
+{
+    "ID": "A_p_1",
+    "Name": "DFRobot_Digital_Button",
+    "Type": "VulnerablePeoplePresence",
+    "zone": "A",
+    "availableServices": [
+      "MQTT"
+    ],
+    "servicesDetails": [
+      {
+        "serviceType": "MQTT",
+        "topic": "SmartTrafficLight/Sensor/A/1"
+      }
+    ]
+  }

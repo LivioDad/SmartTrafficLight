@@ -10,7 +10,8 @@
         {
             "serviceType": "MQTT",
             "topicS": "SmartTrafficLight/Sensor/A/#",
-            "topicP": "SmartTrafficLight/Led/A"
+            "topicP": "SmartTrafficLight/Led/A",
+            "topic_emergency": "SmartTrafficLight/Emergency"
         }
     ]
 }

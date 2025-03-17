@@ -1,0 +1,15 @@
+{
+    "ID": "A_c_1",
+    "Name": "DHT11",
+    "Type": "PIR",
+    "zone": "A",
+    "availableServices": [
+      "MQTT"
+    ],
+    "servicesDetails": [
+      {
+        "serviceType": "MQTT",
+        "topic": "SmartTrafficLight/Sensor/A/1"
+      }
+    ]
+}
