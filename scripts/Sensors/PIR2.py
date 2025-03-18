@@ -13,6 +13,7 @@ import threading
 import json
 
 import random
+import os
 
 
 class PresenceSensor:
@@ -75,7 +76,11 @@ class PresenceSensor:
         self.start()
 
 if __name__ == '__main__':
-    pres = PresenceSensor('PIR2_info.json', 'resource_catalog_info.json')
+    # Lines to make automatically retrieve the path of resource_catalog_info.json
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
+    pres = PresenceSensor('PIR2_info.json', resource_catalog_path)
     print("PIR sensor ready... waiting for motion")
 
     b = threading.Thread(name='background', target=pres.background)
