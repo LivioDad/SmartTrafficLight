@@ -34,7 +34,7 @@ class PresenceSensor:
         self.clientID = info["ID"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, None)
 
-        self.pir = MotionSensor(27)
+        self.pir = MotionSensor(17)
 
 
     def register(self):
@@ -64,7 +64,7 @@ class PresenceSensor:
         }
         self.client.myPublish(self.topic, msg)
         print("published\n" + json.dumps(msg))
-        print(f"Motion detected! ({time():.2f})")
+        print(f"Motion detected! ({time.time():.2f})")
 
         
     def background(self):
