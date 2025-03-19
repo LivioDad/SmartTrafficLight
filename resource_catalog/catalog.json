@@ -1,9 +1,1 @@
-{
-	"lastUpdate": 0,
-	"base_topic": "SmartTrafficLight",
-	"broker": {
-		"name": "test.mosquitto.org",
-		"port": 1883
-	},
-	"resourcesList": []
-}
+{"lastUpdate": 1742383514.804416, "base_topic": "SmartTrafficLight", "broker": {"name": "test.mosquitto.org", "port": 1883}, "resourcesList": [{"ID": "A_c_1", "Name": "DHT11", "Type": "PIR", "zone": "A", "availableServices": ["MQTT"], "servicesDetails": [{"serviceType": "MQTT", "topic": "SmartTrafficLight/Sensor/A/1"}], "lastUpdate": 1742383514.8044124}]}

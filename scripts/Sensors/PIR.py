@@ -1,62 +1,100 @@
+from MyMQTT import *
+import time
+import datetime
+import json
+import requests
 from gpiozero import MotionSensor
-from time import time, sleep
-from MyMQTT import MyMQTT
+import signal
+import threading
+
+import urllib.request
+import requests
+import threading
 import json
 
-# MQTT Configuration
-BROKER = "mqtt.eclipseprojects.io"
-PORT = 1883
-CLIENT_ID = "PIR_Sensor_01"
-TOPIC = "/pir/motion"
+import random
+import os
 
-class PIRPublisher:
-    def __init__(self, clientID, broker, port):
-        self.clientID = clientID
-        self.broker = broker
-        self.port = port
-        self.PIRClient = MyMQTT(clientID, broker, port, None)
-    
+
+class PresenceSensor:
+    def __init__(self, PIR_info, resource_catalog_file):
+        # Retrieve broker info from service catalog
+        self.resource_catalog = json.load(open(resource_catalog_file))
+        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' \
+                         + self.resource_catalog["ip_port"] + '/broker'
+        r = requests.get(request_string)
+        rjson = json.loads(r.text)
+        self.broker = rjson["name"]
+        self.port = rjson["port"]
+
+        # Details about sensor
+        self.PIR_info = PIR_info
+        info = json.load(open(self.PIR_info))
+        self.topic = info["servicesDetails"][0]["topic"]
+        self.clientID = info["ID"]
+        self.client = MyMQTT(self.clientID, self.broker, self.port, None)
+
+        self.pir = MotionSensor(27)
+
+
+    def register(self):
+        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
+        data = json.load(open(self.PIR_info))
+        try:
+            r = requests.put(request_string, json.dumps(data, indent=4))
+            print(f'Response: {r.text}')
+        except:
+            print("An error occurred during registration")
+
     def start(self):
-        self.PIRClient.start()
+        self.client.start()
 
     def stop(self):
-        self.PIRClient.stop()
+        self.client.stop()
 
-    def publish_motion(self):
-        timestamp = time()
-        message = {
-            "bn": f"{self.clientID}/pir",
-            "e": [{
-                "n": "motion",
-                "u": "boolean",
-                "t": timestamp,
-                "v": True  # Movement detected
-            }]
+    def motion_callback(self):
+        msg = {
+            "bn": self.clientID,
+            "e": {
+                "n": "ped_sens",
+                "u": "Boolean",
+                "t": time.time(),
+                "v": True,
+            }
         }
-        self.PIRClient.myPublish(TOPIC, message)
-        # print(f"Published to {TOPIC}: {json.dumps(message)}")
+        self.client.myPublish(self.topic, msg)
+        print("published\n" + json.dumps(msg))
+        print(f"Motion detected! ({time():.2f})")
 
-# Initialize PIR sensor
-pir = MotionSensor(17)
-print("PIR sensor ready... waiting for motion")
+        
+    def background(self):
+        while True:
+            self.register()
+            time.sleep(10)
 
-# Initialize MQTT publisher
-publisher = PIRPublisher(CLIENT_ID, BROKER, PORT)
-publisher.start()
+    def foreground(self):
+        self.start()
 
-last_motion_time = 0
+if __name__ == '__main__':
+    # Lines to make automatically retrieve the path of resource_catalog_info.json
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
+    pir_info_path = os.path.join(script_dir, "PIR_info.json")
+    pir_info_path = os.path.normpath(pir_info_path)
+    pres = PresenceSensor(pir_info_path, resource_catalog_path)
+    print("PIR sensor ready... waiting for motion")
 
-try:
-    while True:
-        if pir.motion_detected:
-            now = time()
-            if now - last_motion_time > 1:  # Avoid duplicate readings
-                print(f"Motion detected! ({now:.2f})")
-                publisher.publish_motion()
-                last_motion_time = now
-        sleep(0.1)  # Adjusted sleep for responsiveness
+    b = threading.Thread(name='background', target=pres.background)
+    f = threading.Thread(name='foreground', target=pres.foreground)
 
-except KeyboardInterrupt:
-    print("\nInterrupted by user. Exiting...")
-finally:
-    publisher.stop()
+    b.start()
+    f.start()
+
+    try:
+        pres.pir.when_motion = pres.motion_callback
+
+        #pause()
+
+    finally:
+        pres.stop()
