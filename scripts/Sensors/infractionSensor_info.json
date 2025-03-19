@@ -1,0 +1,17 @@
+{
+    "ID": "A_I_1",
+    "Name": "HC_SR=$",
+    "Type": "proximity",
+    "zone": "A",
+    "distance_threshold": 30,
+    "warning_cooldown": 3,
+    "availableServices": [
+      "MQTT"
+    ],
+    "servicesDetails": [
+      {
+        "serviceType": "MQTT",
+        "topic": "SmartTrafficLight/Sensor/A/1"
+      }
+    ]
+}

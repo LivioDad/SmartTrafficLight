@@ -71,7 +71,7 @@ class LedManager:
             messageReceived = json.loads(payload)
             bn = messageReceived["bn"] #identifies the sensor that sended the message
             id = bn.split('_')
-            sensorType = id[1] #sensor type (b for the button , c for the movement sensor)
+            sensorType = id[1] #sensor type (b for the button , c for the movement sensor , I for infraction sensor)
             trafficLightID = id[2] #id of the Led associated to the sensor (1 or 2 depending on the intersection)
             obj = 0
             if messageReceived["e"]["n"] == "vul_button": #if the message its from a button (vulnerable pedestrian)
@@ -89,7 +89,7 @@ class LedManager:
             elif messageReceived["e"]["n"] == "mov_sens": #if the message its from a button (infraction)
                 obj = "car_infraction"
                 if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
-                    specific_topic = self.topicP + '/' + trafficLightID
+                    specific_topic = self.topicP + '/' + trafficLightID  #non so ancora dove mandare il messaggio, in che topic
                     self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a car infraction
 
         elif topic == self.topicE:

@@ -83,6 +83,7 @@ class LEDLights:
         cycle = self.standard_cycle  # Default cycle
         emergency = False
         intersection = None
+        direction = None
         if topic == self.topic_zone + '/1':
             # /1 we are in the first intersection
             intersection = 1
@@ -115,7 +116,7 @@ class LEDLights:
             cycle = self.emergency_cycle
             direction = payload["e"]["v"]
 
-        self.led_cycle_v2(cycle = cycle ,emergency= emergency, intersection = intersection  ) #regular led cycle
+        self.led_cycle_v2(cycle = cycle ,emergency= emergency, intersection = intersection , direction= direction ) #regular led cycle
 
 
     def led_cycle_v2(self ,intersection ,  cycle, emergency , direction = None):
