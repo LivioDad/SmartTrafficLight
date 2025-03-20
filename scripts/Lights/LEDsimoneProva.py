@@ -5,9 +5,9 @@ import json
 import requests
 # non so quali siano le libreire che servono per il led :)
 from gpiozero import LED
-import Adafruit_DHT
 import threading
-import urllib.request
+import os
+
 
 #led its just a subscriber, subscribe to two different topics depending on what you need to do with the lights
 # general topic for cars , and specific topic for pedestrian button 
@@ -26,39 +26,37 @@ class LEDLights:
         # Details about sensor
 
         self.led_info = led_info
-        info = json.load(open(self.led_info))
-        self.topic = info["servicesDetails"][0]["topic"]
-        self.topic_zone = info["servicesDetails"][0]["topic_zone"]
+
+        self.topic = led_info["servicesDetails"][0]["topic"]
+        self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
 
         self.clientID = info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
         
-        self.standard_cycle = info["standard_duty_cycle"]
-        self.vulnerable_cycle = info["vulnerable_duty_cycle"]
-        self.pedestrian_cycle = info["pedestrian_duty_cycle"]
-        self.emergency_cycle = info["emergency_duty_cycle"]
+        self.standard_cycle = led_info["standard_duty_cycle"]
+        self.vulnerable_cycle = led_info["vulnerable_duty_cycle"]
+        self.pedestrian_cycle = led_info["pedestrian_duty_cycle"]
+        self.emergency_cycle = led_info["emergency_duty_cycle"]
+
+        self.intersection_number = led_info["ID"].split('_')[2]
+        self.pins = led_info["pins"]
 
 
         #intersection 1
 
-        self.NS_led1green = LED(24)  # Car green light
-        self.NS_led1red = LED(22)  # Car red light
-        self.WE_led1green = LED(23)  # Pedestrian green light
-        self.WE_led1red = LED(18)  # Pedestrian red light
+        self.NS_green = LED(self.pins["NS_green"])  # Car green light
+        self.NS_red = LED(self.pins["NS_red"])  # Car red light
+        self.WE_green = LED(self.pins["WE_green"])  # Pedestrian green light
+        self.WE_red = LED(self.pins["WE_red"])  # Pedestrian red light
 
         #intersection2
-
-        self.NS_led2green = LED()  # Car green light
-        self.NS_led2red = LED()  # Car red light
-        self.WE_led2green = LED()  # Pedestrian green light
-        self.WE_led2red = LED()  # Pedestrian red light
 
 
     def register(self):#register handles the led registration to resource catalogs
         # Send registration request to Resource Catalog Server
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' \
                          + self.resource_catalog["ip_port"] + '/registerResource'
-        data = json.load(open(self.led_info))
+        data = self.led_info
         try:
             r = requests.put(request_string, json.dumps(data, indent=4))
             print(f'Response: {r.text}')
@@ -82,11 +80,9 @@ class LEDLights:
         print(f'Message received: {payload}\n Topic: {topic}')
         cycle = self.standard_cycle  # Default cycle
         emergency = False
-        intersection = None
         direction = None
-        if topic == self.topic_zone + '/1':
+        if topic == self.topic_zone + f'/{self.intersection_number}':
             # /1 we are in the first intersection
-            intersection = 1
             if payload["e"]["v"] == 'vulnerable_pedestrian':
             #do what you need to do with the lights in the intersection 1 when a vulnerable pedestrian is detected
                 cycle = self.vulnerable_cycle
@@ -97,18 +93,6 @@ class LEDLights:
             #put a variable infraction to true
                 pass
 
-        elif topic == self.topic_zone + '/2':
-            # /2 we are in the second intersection
-            intersection = 2
-            if payload["e"]["v"] == 'vulnerable_pedestrian':
-            #do what you need to do with the lights in the intersection 1 when a vulnerable pedestrian is detected
-                cycle = self.vulnerable_cycle
-            elif payload["e"]["v"] == 'pedestrian':
-            #do what you need to do with the lights in the intersection 1 when a pedestrian is detected
-                cycle = self.pedestrian_cycle
-            elif payload["e"]["v"] == 'car_infraction':
-            #put a variable infraction to true
-                pass
 
         elif topic == self.topic_zone + '/emergency':
             #emergency in the intersection 1 and 2
@@ -116,42 +100,37 @@ class LEDLights:
             cycle = self.emergency_cycle
             direction = payload["e"]["v"]
 
-        self.led_cycle_v2(cycle = cycle ,emergency= emergency, intersection = intersection , direction= direction ) #regular led cycle
+        self.led_cycle_v2(cycle = cycle ,emergency= emergency , direction= direction ) #regular led cycle
 
 
-    def led_cycle_v2(self ,intersection ,  cycle, emergency , direction = None):
+    def led_cycle_v2(self ,  cycle, emergency , direction = None):
 
         if emergency:
-            print("EMERGENCY!")  #emergecy only in NS direction
-            for i in [1, 2]:
-                getattr(self, f"NS_led{i}green").on()
-                getattr(self, f"NS_led{i}red").off()
-                getattr(self, f"WE_led{i}green").off()
-                getattr(self, f"WE_led{i}red").on()
+            if direction == 'NS':
+                self.NS_green.on()
+                self.NS_red.off()
+                self.WE_green.off()
+                self.WE_red.on()
+            elif direction == 'WE':
+                self.NS_green.off()
+                self.NS_red.on()
+                self.WE_green.on()
+                self.WE_red.off()
             time.sleep(cycle)
-
-        NS_green = getattr(self, f"NS_led{intersection}green", None)
-        NS_red = getattr(self, f"NS_led{intersection}red", None)
-        WE_green = getattr(self, f"WE_led{intersection}green", None)
-        WE_red = getattr(self, f"WE_led{intersection}red", None)
-
-        if None in (NS_green, NS_red, WE_green, WE_red):
-            print(f"Error: LED of intersection {intersection} not found.")
-            return
 
         while True:
             time.sleep(cycle)
-            if NS_green.is_lit:
-                NS_green.off()
-                NS_red.on()
-                WE_green.on()
-                WE_red.off()
+            if self.NS_green.is_lit:
+                self.NS_green.off()
+                self.NS_red.on()
+                self.WE_green.on()
+                self.WE_red.off()
 
             else:
-                NS_green.on()
-                NS_red.off()
-                WE_green.off()
-                WE_red.on()
+                self.NS_green.on()
+                self.NS_red.off()
+                self.WE_green.off()
+                self.WE_red.on()
 
         
     def background(self):
@@ -166,13 +145,31 @@ class LEDLights:
 if __name__ == '__main__':
     #bisogna essere sicuri che il file resource_catalog_info.json sia accesibile anche se è in un'altra cartella
     # Riposta: per questo si dovrebbe poter usare la libreria os
-    led = LEDLights('LEDsimoneProvaInfo.json', 'resource_catalog_info.json')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
+    led_info_path = os.path.join(script_dir, "LEDsimoneProvaInfo.json")
+    led_info_path = os.path.normpath(led_info_path)
 
-    b = threading.Thread(name='background', target=led.background)
-    f = threading.Thread(name='foreground', target=led.foreground)
 
-    b.start()
-    f.start()
+    info = json.load(open(led_info_path))
+    info_led1 = json.dumps(info["led_intersection"][0])
+    info_led2 = json.dumps(info["led_intersection"][1])
+
+    led1 = LEDLights(info_led1, 'resource_catalog_info.json')
+    led2 = LEDLights(info_led2, 'resource_catalog_info.json')
+
+    b1 = threading.Thread(name='background', target=led1.background)
+    f1 = threading.Thread(name='foreground', target=led1.foreground)
+
+    b2 = threading.Thread(name='background', target=led2.background)
+    f2 = threading.Thread(name='foreground', target=led2.foreground)
+
+    b1.start()
+    f1.start()
+
+    b2.start()
+    f2.start()
 
     while True:
         time.sleep(1)
