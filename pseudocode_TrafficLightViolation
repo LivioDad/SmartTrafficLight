@@ -1,5 +1,5 @@
 # Sottoscrive al topic a cui il LED manager manda a ogni variazione lo stato del semaforo.
-# Per semplicità e mancanza di hw, ipotizziamo che il controllo avvenga solo a un incrocio e 
+# Per semplicità e mancanza di HW, ipotizziamo che il controllo avvenga solo a un incrocio e 
 # solo in una direzione di marcia (NS)
 status = mqtt.subscribe("semaforo")
 
