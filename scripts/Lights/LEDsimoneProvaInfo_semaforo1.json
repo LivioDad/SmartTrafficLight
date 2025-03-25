@@ -1,0 +1,24 @@
+{
+	"LedInfo":{
+		"ID": "A_led_1",
+		"Name": "Traffic_light_LED1",
+		"Type": "LED",
+		"zone": "A",
+		"availableServices": ["MQTT"],
+		"servicesDetails": [{
+			"serviceType": "MQTT",
+			"topic": "SmartTrafficLight/Led/A/#",
+			"topic_zone": "SmartTrafficLight/Led/A"
+		}],
+		"standard_duty_cycle": 5,
+		"emergency_duty_cycle": 20,
+		"pedestrian_duty_cycle": 7,
+		"vulnerable_road_users_duty_cycle": 10,
+		"pins": {
+			"NS_green": 6,
+			"NS_red": 5,
+			"WE_green": 7,
+			"WE_red": 8
+		}
+	}
+}

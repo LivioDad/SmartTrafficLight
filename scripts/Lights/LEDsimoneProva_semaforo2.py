@@ -3,16 +3,10 @@ import time
 import datetime
 import json
 import requests
-# non so quali siano le libreire che servono per il led :)
 from gpiozero import LED
 import threading
 import os
 
-
-#led its just a subscriber, subscribe to two different topics depending on what you need to do with the lights
-# general topic for cars , and specific topic for pedestrian button 
-
-#reads what LedManager sends and act depending on it
 class LEDLights:
     def __init__(self, led_info, resource_catalog_file):
         # Retrieve broker info from resource catalog
@@ -25,16 +19,17 @@ class LEDLights:
         self.port = rjson["port"]
         # Details about sensor
 
+        led_info = led_info["LedInfo"]
         self.led_info = led_info
 
         self.topic = led_info["servicesDetails"][0]["topic"]
         self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
 
-        self.clientID = info["Name"]
+        self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
         
         self.standard_cycle = led_info["standard_duty_cycle"]
-        self.vulnerable_cycle = led_info["vulnerable_duty_cycle"]
+        self.vulnerable_cycle = led_info["vulnerable_road_users_duty_cycle"]
         self.pedestrian_cycle = led_info["pedestrian_duty_cycle"]
         self.emergency_cycle = led_info["emergency_duty_cycle"]
 
@@ -42,14 +37,11 @@ class LEDLights:
         self.pins = led_info["pins"]
 
 
-        #intersection 1
-
+        #intersection
         self.NS_green = LED(self.pins["NS_green"])  # Car green light
         self.NS_red = LED(self.pins["NS_red"])  # Car red light
         self.WE_green = LED(self.pins["WE_green"])  # Pedestrian green light
         self.WE_red = LED(self.pins["WE_red"])  # Pedestrian red light
-
-        #intersection2
 
 
     def register(self):#register handles the led registration to resource catalogs
@@ -93,14 +85,13 @@ class LEDLights:
             #put a variable infraction to true
                 pass
 
-
         elif topic == self.topic_zone + '/emergency':
             #emergency in the intersection 1 and 2
             emergency = True
             cycle = self.emergency_cycle
             direction = payload["e"]["v"]
 
-        self.led_cycle_v2(cycle = cycle ,emergency= emergency , direction= direction ) #regular led cycle
+        self.led_cycle_v2(cycle = cycle ,emergency= emergency , direction= direction ) # regular led cycle
 
 
     def led_cycle_v2(self ,  cycle, emergency , direction = None):
@@ -143,33 +134,25 @@ class LEDLights:
 
 
 if __name__ == '__main__':
-    #bisogna essere sicuri che il file resource_catalog_info.json sia accesibile anche se è in un'altra cartella
-    # Riposta: per questo si dovrebbe poter usare la libreria os
+    # Automatically retrieve the path of JSON config files
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    parent_dir1 = os.path.dirname(script_dir)
+    parent_dir2 = os.path.dirname(parent_dir1)    
+    print(parent_dir2)
+    resource_catalog_path = os.path.join(parent_dir2, "resource_catalog", "resource_catalog_info.json")
     resource_catalog_path = os.path.normpath(resource_catalog_path)
-    led_info_path = os.path.join(script_dir, "LEDsimoneProvaInfo.json")
+    led_info_path = os.path.join(script_dir, "LEDsimoneProvaInfo_semaforo2.json")
     led_info_path = os.path.normpath(led_info_path)
 
-
     info = json.load(open(led_info_path))
-    info_led1 = json.dumps(info["led_intersection"][0])
-    info_led2 = json.dumps(info["led_intersection"][1])
 
-    led1 = LEDLights(info_led1, 'resource_catalog_info.json')
-    led2 = LEDLights(info_led2, 'resource_catalog_info.json')
+    led = LEDLights(info, resource_catalog_path)
 
-    b1 = threading.Thread(name='background', target=led1.background)
-    f1 = threading.Thread(name='foreground', target=led1.foreground)
+    b = threading.Thread(name='background', target=led.background)
+    f = threading.Thread(name='foreground', target=led.foreground)
 
-    b2 = threading.Thread(name='background', target=led2.background)
-    f2 = threading.Thread(name='foreground', target=led2.foreground)
-
-    b1.start()
-    f1.start()
-
-    b2.start()
-    f2.start()
+    b.start()
+    f.start()
 
     while True:
         time.sleep(1)
