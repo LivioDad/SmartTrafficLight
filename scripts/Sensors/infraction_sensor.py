@@ -14,9 +14,6 @@ import json
 import random
 import os
 
-
-
-
 class InfractionSensor:
     def __init__(self, infractionSensor_info, resource_catalog_file):
         # Retrieve broker info from service catalog
@@ -57,7 +54,7 @@ class InfractionSensor:
     def stop(self):
         self.client.stop()
 
-    def motion_callback(self):
+    def presence_callback(self):
         distance = self.pir.distance * 100  # Convert to cm
         print(f"Distance: {distance:.2f} cm")
         
@@ -75,16 +72,14 @@ class InfractionSensor:
                         "v": True,
                     }
                 }
-            self.client.myPublish(self.topic, msg)
-            print("published\n" + json.dumps(msg))
-            print(f"Motion detected! ({time.time():.2f})")
-
+                self.client.myPublish(self.topic, msg)
+                print("published\n" + json.dumps(msg))
+                print(f"Vehicle detected! ({time.time():.2f})")
 
             self.last_warning_time = current_time  # Update the last warning time
         
         time.sleep(0.1)  # Wait time to avoid an overly fast loop
        
-
         
     def background(self):
         while True:
@@ -102,7 +97,7 @@ if __name__ == '__main__':
     infractionSensor_info_path = os.path.join(script_dir, "infractionSensor_info.json")
     infractionSensor_info_path = os.path.normpath(infractionSensor_info_path)
     pres = InfractionSensor(infractionSensor_info_path, resource_catalog_path)
-    print("PIR sensor ready... waiting for motion")
+    print("Distance sensor ready... waiting for detection")
 
     b = threading.Thread(name='background', target=pres.background)
     f = threading.Thread(name='foreground', target=pres.foreground)
@@ -111,7 +106,9 @@ if __name__ == '__main__':
     f.start()
 
     try:
-        pres.pir.when_motion = pres.motion_callback
+        while True:
+            pres.presence_callback()
+            time.sleep(0.5)
 
         #pause()
 
