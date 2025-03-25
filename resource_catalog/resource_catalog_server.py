@@ -82,7 +82,7 @@ class TLCatalogManager(object):
                         # Update "lastUpdate" of resource catalog catalog.json
                         self.catalog['lastUpdate'] = time.time()
                         catalog_file = open(self.catalog_file, "w")
-                        json.dump(self.catalog, catalog_file) #dump the updated catalog
+                        json.dump(self.catalog, catalog_file , indent=4) #dump the updated catalog
                         return 'Registered successfully'
 
                 #if the resources has not been found in the catalog then add it, REGISTRATION
@@ -90,7 +90,7 @@ class TLCatalogManager(object):
                 # Update "lastUpdate" of resource catalog
                 self.catalog['lastUpdate'] = time.time()
                 catalog_file = open(self.catalog_file, "w")
-                json.dump(self.catalog, catalog_file)
+                json.dump(self.catalog, catalog_file , indent=4)
                 return 'Registered successfully'
             except:
                 return 'An error occurred during registration of Resource'
