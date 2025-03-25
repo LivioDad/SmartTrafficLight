@@ -141,7 +141,7 @@ if __name__ == '__main__':
     print(parent_dir2)
     resource_catalog_path = os.path.join(parent_dir2, "resource_catalog", "resource_catalog_info.json")
     resource_catalog_path = os.path.normpath(resource_catalog_path)
-    led_info_path = os.path.join(script_dir, "LEDsimoneProvaInfo_semaforo1.json")
+    led_info_path = os.path.join(script_dir, "LED_semaforo2_info.json")
     led_info_path = os.path.normpath(led_info_path)
 
     info = json.load(open(led_info_path))
