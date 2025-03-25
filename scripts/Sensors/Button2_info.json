@@ -1,7 +1,7 @@
 {
     "ID": "A_p_1",
-    "Name": "DFRobot_Digital_Button",
-    "Type": "VulnerablePeoplePresence",
+    "Name": "VulnerableUsersButton",
+    "Type": "VulnerablePedestrianPresence",
     "zone": "A",
     "availableServices": [
       "MQTT"
