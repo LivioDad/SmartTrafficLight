@@ -24,6 +24,7 @@ class LEDLights:
 
         self.topic = led_info["servicesDetails"][0]["topic"]
         self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
+        self.topic_red = led_info["servicesDetails"][0]["topic_red"]
 
         self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
@@ -102,11 +103,13 @@ class LEDLights:
                 self.NS_red.off()
                 self.WE_green.off()
                 self.WE_red.on()
+                self.publish_red_light("WE" , cycle)
             elif direction == 'WE':
                 self.NS_green.off()
                 self.NS_red.on()
                 self.WE_green.on()
                 self.WE_red.off()
+                self.publish_red_light("NS" , cycle)
             time.sleep(cycle)
 
         while True:
@@ -116,13 +119,29 @@ class LEDLights:
                 self.NS_red.on()
                 self.WE_green.on()
                 self.WE_red.off()
+                self.publish_red_light("NS" ,cycle)
 
             else:
                 self.NS_green.on()
                 self.NS_red.off()
                 self.WE_green.off()
                 self.WE_red.on()
+                self.publish_red_light("WE" ,cycle)
 
+                
+    def publish_red_light(self , direction , cycle):
+        msg = {
+            "intersection": self.intersection_number,
+            "e": {
+                "n": "red_light",
+                "u": "direction",
+                "t": time.time(),
+                "v": direction,
+                "c" : cycle
+            }
+        }
+        self.client.myPublish(self.topic_red, msg)
+        print("Published:\n" + json.dumps(msg))
         
     def background(self):
         while True:

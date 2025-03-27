@@ -8,7 +8,8 @@
 		"servicesDetails": [{
 			"serviceType": "MQTT",
 			"topic": "SmartTrafficLight/Led/A/#",
-			"topic_zone": "SmartTrafficLight/Led/A"
+			"topic_zone": "SmartTrafficLight/Led/A",
+			"topic_red": "SmartTrafficLight/Led/A/redLight"
 		}],
 		"standard_duty_cycle": 5,
 		"emergency_duty_cycle": 20,

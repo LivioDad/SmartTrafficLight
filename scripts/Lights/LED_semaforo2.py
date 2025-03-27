@@ -24,6 +24,7 @@ class LEDLights:
 
         self.topic = led_info["servicesDetails"][0]["topic"]
         self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
+        self.topic_red = led_info["servicesDetails"][0]["topic_red"]
 
         self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
@@ -102,11 +103,13 @@ class LEDLights:
                 self.NS_red.off()
                 self.WE_green.off()
                 self.WE_red.on()
+                self.publish_red_light("WE")
             elif direction == 'WE':
                 self.NS_green.off()
                 self.NS_red.on()
                 self.WE_green.on()
                 self.WE_red.off()
+                self.publish_red_light("NS")
             time.sleep(cycle)
 
         while True:
@@ -116,14 +119,28 @@ class LEDLights:
                 self.NS_red.on()
                 self.WE_green.on()
                 self.WE_red.off()
+                self.publish_red_light("NS")
 
             else:
                 self.NS_green.on()
                 self.NS_red.off()
                 self.WE_green.off()
                 self.WE_red.on()
+                self.publish_red_light("WE")
 
-        
+    def publish_red_light(self , direction):
+        msg = {
+            "intersection": self.intersection_number,
+            "e": {
+                "n": "red_light",
+                "u": "direction",
+                "t": time.time(),
+                "v": direction
+            }
+        }
+        self.client.myPublish(self.topic_red, msg)
+        print("Published:\n" + json.dumps(msg))
+
     def background(self):
         while True:
             self.register()
@@ -137,7 +154,7 @@ if __name__ == '__main__':
     # Automatically retrieve the path of JSON config files
     script_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir1 = os.path.dirname(script_dir)
-    parent_dir2 = os.path.dirname(parent_dir1)    
+    parent_dir2 = os.path.dirname(parent_dir1)
     print(parent_dir2)
     resource_catalog_path = os.path.join(parent_dir2, "resource_catalog", "resource_catalog_info.json")
     resource_catalog_path = os.path.normpath(resource_catalog_path)
