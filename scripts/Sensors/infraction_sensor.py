@@ -40,6 +40,7 @@ class InfractionSensor:
 
         self.pir  = DistanceSensor(echo=27, trigger=22)
         self.car_simulator
+        self.converter = { "NS" : 1 , "WE" : 2}
 
 
     def register(self):
@@ -59,21 +60,16 @@ class InfractionSensor:
         infraction_time = payload["e"]["t"]
         cycle = payload["e"]["c"]
 
-        plate , car_time , direction = self.car_simulator()
+        car_time = self.car_simulator()
 
         if car_time > self.last_warning_time and car_time < (self.last_warning_time + cycle):
-            self.publish_red_infraction(direction ,intersection , infraction_time , plate)
+            self.publish_red_infraction(direction ,intersection , infraction_time )
 
-    def publish_red_infraction(self , direction , intersection , infraction_time , plate):
+    def publish_red_infraction(self , direction , intersection , infraction_time):
         msg = {
-                "bn" : self.clientID,
-                "e": {
-                    "n": "red_infraction",
-                    "i" : intersection,
-                    "t" : infraction_time,
-                    "d": direction,
-                    "p" : plate
-                }
+                "intersection" : intersection,
+                "timestamp" : infraction_time,
+                "station": self.converter[direction]
             }
         self.client.myPublish(self.topic_infraction, msg)
         print("Published:\n" + json.dumps(msg))
@@ -82,14 +78,9 @@ class InfractionSensor:
     def car_simulator(self):
         #pseudocode
         
-        plate = random
         car_time = time.time()
-        direction = "NS"
         
-        return plate, car_time , direction
-
-
-
+        return  car_time
 
 
     def start(self):
