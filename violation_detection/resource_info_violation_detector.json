@@ -1,0 +1,13 @@
+{
+  "ID": "violation_detector_1",
+  "Name": "Violation Detector",
+  "Type": "Processor",
+  "zone": "N/A",
+  "availableServices": ["MQTT"],
+  "servicesDetails": [
+    {
+      "serviceType": "MQTT",
+      "topic": "sensors/violation"
+    }
+  ]
+}

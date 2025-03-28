@@ -1,0 +1,6 @@
+{
+  "client_id": "violation_detector",
+  "mqtt_broker": "localhost",
+  "mqtt_port": 1883,
+  "mqtt_topic": "sensors/violation"
+}

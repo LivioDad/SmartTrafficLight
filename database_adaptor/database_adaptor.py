@@ -1,14 +1,36 @@
 import cherrypy
 import sqlite3
 import json
+import time
+import threading
+import requests
 from urllib.parse import parse_qs
 
 DB_PATH = "infraction_database.db"
 
 class DatabaseAdaptor:
     
-    def __init__(self):
+    def __init__(self, resource_info_path, catalog_info_path):
         self.init_db()
+
+        # Load JSON files
+        self.resource_info = json.load(open(resource_info_path))
+        catalog_info = json.load(open(catalog_info_path))
+        self.catalog_url = f"http://{catalog_info['ip_address']}:{catalog_info['ip_port']}/registerResource"
+
+        # Start background thread for registration
+        threading.Thread(target=self.register_to_catalog, daemon=True).start()
+
+    def register_to_catalog(self):
+        """ Periodically register this service to the catalog """
+        while True:
+            try:
+                self.resource_info["lastUpdate"] = time.time()
+                response = requests.put(self.catalog_url, json=self.resource_info)
+                print(f"📡 Registered to catalog: {response.status_code} - {response.text}")
+            except Exception as e:
+                print(f"❌ Registration error: {e}")
+            time.sleep(10)
 
     def init_db(self):
         """ Initializes the database table if it does not exist. """
@@ -25,12 +47,9 @@ class DatabaseAdaptor:
             conn.commit()
 
     def get_connection(self):
-        """ Returns a new database connection. """
         return sqlite3.connect(DB_PATH)
-    
+
     def build_query(self, plate=None, station=None, from_date=None, to_date=None):
-        """ Builds a dynamic SQL query based on the given parameters. """
-        
         query = "SELECT * FROM violations WHERE 1=1"
         params = []
 
@@ -45,21 +64,12 @@ class DatabaseAdaptor:
         if from_date and to_date:
             query += " AND date BETWEEN ? AND ?"
             params.extend([from_date, to_date])
-        
+
         return query, params
-    
-    expose = True
+
+    exposed = True
 
     def GET(self, **kwargs):
-        """ Handles GET requests for retrieving infractions based on filters. 
-            kwargs = {
-                        "plate": "AB123CD",
-                        "station": "15",
-                        "from": "2025-03-01",
-                        "to": "2025-03-05"
-                    }
-        """
-        
         params = {k: v[0] for k, v in parse_qs(cherrypy.request.query_string).items()}
         plate = params.get('plate')
         station = params.get('station')
@@ -67,7 +77,7 @@ class DatabaseAdaptor:
         to_date = params.get('to')
 
         query, query_params = self.build_query(plate, station, from_date, to_date)
-        
+
         with self.get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(query, query_params)
@@ -77,25 +87,20 @@ class DatabaseAdaptor:
             {"id": row[0], "plate": row[1], "date": row[2], "station": row[3]}
             for row in results
         ]
-    
+
     def POST(self):
-        """ Add new violations to the database. """
         try:
-            # Parse JSON body
             raw_body = cherrypy.request.body.read().decode("utf-8")
             data = json.loads(raw_body)
 
-            # Extract fields
             plate = data.get("plate")
             date = data.get("date")
             station = data.get("station")
 
-            # Validate input fields
-            if not plate or not date or not station:
+            if not plate or not date or station is None:
                 cherrypy.response.status = 400
                 return {"error": "Missing required fields: plate, date, or station"}
 
-            # Insert into database
             with self.get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute('''
@@ -104,7 +109,6 @@ class DatabaseAdaptor:
                 ''', (plate, date, station))
                 conn.commit()
 
-            # Return success response
             cherrypy.response.status = 201
             return {"message": "Violation added successfully!"}
 
@@ -115,10 +119,10 @@ class DatabaseAdaptor:
         except Exception as e:
             cherrypy.response.status = 500
             return {"error": f"Internal Server Error: {e}"}
-    
+
 
 if __name__ == '__main__':
-    cherrypy.quickstart(DatabaseAdaptor(), '/', {
+    cherrypy.quickstart(DatabaseAdaptor("resource_info_database_adaptor.json", "resource_catalog_info.json"), '/', {
         '/': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
             'tools.response_headers.on': True,

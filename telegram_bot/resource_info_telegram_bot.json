@@ -1,0 +1,19 @@
+{
+    "ID": "telegram_bot_1",
+    "Name": "Telegram Bot",
+    "Type": "Bot",
+    "zone": "N/A",
+    "availableServices": ["REST", "Telegram"],
+    "servicesDetails": [
+      {
+        "serviceType": "REST",
+        "endpoint": "http://localhost:8082"
+      },
+      {
+        "serviceType": "Telegram",
+        "bot_name": "TrafficBot"
+      }
+    ]
+  }
+  
+  

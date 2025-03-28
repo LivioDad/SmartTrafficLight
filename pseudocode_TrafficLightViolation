@@ -6,6 +6,7 @@ status = mqtt.subscribe("semaforo")
 def POST():
     pass
 
+# modificare lo status. Il sensore di moviemtno è attivo solo quando il semaforo è rosso.
 while status == "red":
 
     presence = mqtt.subscribe("car_presence")

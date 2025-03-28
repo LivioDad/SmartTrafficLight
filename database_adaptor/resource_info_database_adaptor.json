@@ -1,0 +1,14 @@
+{
+    "ID": "db_connector_1",
+    "Name": "Database Adaptor",
+    "Type": "Storage",
+    "zone": "N/A",
+    "availableServices": ["REST"],
+    "servicesDetails": [
+      {
+        "serviceType": "REST",
+        "endpoint": "http://localhost:8080/infraction"
+      }
+    ]
+  }
+  
