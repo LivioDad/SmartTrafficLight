@@ -39,8 +39,16 @@ class InfractionSensor:
         self.last_warning_time = 0
 
         self.pir  = DistanceSensor(echo=27, trigger=22)
-        self.car_simulator
         self.converter = { "NS" : 1 , "WE" : 2}
+
+        
+        self.current_car_time = time.time()
+        # Avvia il simulatore di auto in un thread separato
+        self.simulator_running = True
+        self.simulator_thread = threading.Thread(target=self.car_simulator, daemon=True)
+        self.simulator_thread.start()
+
+
 
 
     def register(self):
@@ -60,7 +68,7 @@ class InfractionSensor:
         infraction_time = payload["e"]["t"]
         cycle = payload["e"]["c"]
 
-        car_time = self.car_simulator()
+        car_time = self.current_car_time
 
         if car_time > self.last_warning_time and car_time < (self.last_warning_time + cycle):
             self.publish_red_infraction(direction ,intersection , infraction_time )
@@ -76,11 +84,9 @@ class InfractionSensor:
 
 
     def car_simulator(self):
-        #pseudocode
-        
-        car_time = time.time()
-        
-        return  car_time
+        while self.simulator_running:
+            self.current_car_time = time.time()
+            time.sleep(2)
 
 
     def start(self):
@@ -97,19 +103,6 @@ class InfractionSensor:
         if distance < self.distance_threshold:
             activation_time = time
             if activation_time - self.last_warning_time > self.warning_cooldown:  # Check if enough time has passed
-                '''
-                msg = {
-                    "bn": self.clientID,
-                    "e": {
-                        "n": "mov_sens",
-                        "u": "Boolean",
-                        "t": time.time(),
-                        "v": True,
-                    }
-                }
-                self.client.myPublish(self.topic, msg)
-                print("published\n" + json.dumps(msg))
-                '''
                 print(f"Vehicle detected! ({time.time():.2f})")
             self.last_warning_time = activation_time  # Update the last warning time
         
