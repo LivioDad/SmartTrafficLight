@@ -14,9 +14,6 @@ import json
 import random
 import os
 
-
-
-
 class InfractionSensor:
     def __init__(self, infractionSensor_info, resource_catalog_file):
         # Retrieve broker info from service catalog
@@ -32,6 +29,8 @@ class InfractionSensor:
         self.infractionSensor_info = infractionSensor_info
         info = json.load(open(self.infractionSensor_info))
         self.topic = info["servicesDetails"][0]["topic"]
+        self.topic_red = info["servicesDetails"][0]["topic_red"]
+        self.topic_infraction =  info["servicesDetails"][0]["topic_infraction"]
         self.clientID = info["ID"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, None)
         self.distance_threshold = info["distance_threshold"]
@@ -40,6 +39,7 @@ class InfractionSensor:
         self.last_warning_time = 0
 
         self.pir  = DistanceSensor(echo=27, trigger=22)
+        self.car_simulator
 
 
     def register(self):
@@ -51,21 +51,62 @@ class InfractionSensor:
         except:
             print("An error occurred during registration")
 
+    def notify(self, topic, payload):
+        payload = json.loads(payload)
+        print(f'Message received: {payload}\n Topic: {topic}')
+        intersection = payload["intersection"]
+        direction = payload["e"]["v"]
+        infraction_time = payload["e"]["t"]
+        cycle = payload["e"]["c"]
+
+        plate , car_time , direction = self.car_simulator()
+
+        if car_time > self.last_warning_time and car_time < (self.last_warning_time + cycle):
+            self.publish_red_infraction(direction ,intersection , infraction_time , plate)
+
+    def publish_red_infraction(self , direction , intersection , infraction_time , plate):
+        msg = {
+                "bn" : self.clientID,
+                "e": {
+                    "n": "red_infraction",
+                    "i" : intersection,
+                    "t" : infraction_time,
+                    "d": direction,
+                    "p" : plate
+                }
+            }
+        self.client.myPublish(self.topic_infraction, msg)
+        print("Published:\n" + json.dumps(msg))
+
+
+    def car_simulator(self):
+        #pseudocode
+        
+        plate = random
+        car_time = time.time()
+        direction = "NS"
+        
+        return plate, car_time , direction
+
+
+
+
+
     def start(self):
         self.client.start()
 
     def stop(self):
         self.client.stop()
 
-    def motion_callback(self):
+    def presence_callback(self, time):
         distance = self.pir.distance * 100  # Convert to cm
         print(f"Distance: {distance:.2f} cm")
         
         # If the distance is less than the threshold, publish MQTT message
         if distance < self.distance_threshold:
-            current_time = time.time()
-            if current_time - self.last_warning_time > self.warning_cooldown:  # Check if enough time has passed
-
+            activation_time = time
+            if activation_time - self.last_warning_time > self.warning_cooldown:  # Check if enough time has passed
+                '''
                 msg = {
                     "bn": self.clientID,
                     "e": {
@@ -75,16 +116,14 @@ class InfractionSensor:
                         "v": True,
                     }
                 }
-            self.client.myPublish(self.topic, msg)
-            print("published\n" + json.dumps(msg))
-            print(f"Motion detected! ({time.time():.2f})")
-
-
-            self.last_warning_time = current_time  # Update the last warning time
+                self.client.myPublish(self.topic, msg)
+                print("published\n" + json.dumps(msg))
+                '''
+                print(f"Vehicle detected! ({time.time():.2f})")
+            self.last_warning_time = activation_time  # Update the last warning time
         
         time.sleep(0.1)  # Wait time to avoid an overly fast loop
        
-
         
     def background(self):
         while True:
@@ -102,7 +141,7 @@ if __name__ == '__main__':
     infractionSensor_info_path = os.path.join(script_dir, "infractionSensor_info.json")
     infractionSensor_info_path = os.path.normpath(infractionSensor_info_path)
     pres = InfractionSensor(infractionSensor_info_path, resource_catalog_path)
-    print("PIR sensor ready... waiting for motion")
+    print("Distance sensor ready... waiting for detection")
 
     b = threading.Thread(name='background', target=pres.background)
     f = threading.Thread(name='foreground', target=pres.foreground)
@@ -111,7 +150,9 @@ if __name__ == '__main__':
     f.start()
 
     try:
-        pres.pir.when_motion = pres.motion_callback
+        while True:
+            pres.presence_callback(time.time())
+            time.sleep(0.5)
 
         #pause()
 

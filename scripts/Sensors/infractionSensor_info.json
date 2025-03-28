@@ -11,7 +11,9 @@
     "servicesDetails": [
       {
         "serviceType": "MQTT",
-        "topic": "SmartTrafficLight/Sensor/A/1"
+        "topic": "SmartTrafficLight/Sensor/A/1",
+        "topic_red": "SmartTrafficLight/Led/A/redLight",
+        "topic_infraction" : "SmartTrafficLight/Led/A/redInfraction"
       }
     ]
 }
