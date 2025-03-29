@@ -7,7 +7,7 @@
   "servicesDetails": [
     {
       "serviceType": "MQTT",
-      "topic": "sensors/violation"
+      "topic": "SmartTrafficLight/Led/A/redInfraction"
     }
   ]
 }

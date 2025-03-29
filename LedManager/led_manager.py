@@ -94,8 +94,8 @@ class LedManager:
 
         elif topic == self.topicE:
             messageReceived = json.loads(payload)
-            direction = messageReceived["e"]["n"]
-            zone = messageReceived["bn"]
+            direction = messageReceived["direction"]
+            zone = messageReceived["zone"]
             msg = {
                 "bn": zone,
                 "e": {

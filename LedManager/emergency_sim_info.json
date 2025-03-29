@@ -1,0 +1,14 @@
+{
+    "ID": "ES_11",
+    "Name": "EmergecySystem",
+    "Zone" : "N/A" , 
+    "availableServices": [
+      "MQTT"
+    ],
+    "servicesDetails": [
+      {
+        "serviceType": "MQTT",
+        "topic": "SmartTrafficLight/Emergency"
+      }
+    ]
+  }

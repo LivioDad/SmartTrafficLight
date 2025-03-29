@@ -4,10 +4,8 @@ import datetime
 import json
 import requests
 from gpiozero import MotionSensor
-import signal
 import threading
 
-import urllib.request
 import requests
 import threading
 import json
