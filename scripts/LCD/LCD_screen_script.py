@@ -5,15 +5,10 @@ from MyMQTT import MyMQTT
 import requests
 import os
 
-
 class LCDSubscriber:
     def __init__(self, led_manager_info, resource_catalog_info):
         """
         Initializes the LCD display and MQTT client by getting broker and topic details from the provided configuration files.
-
-        Parameters:
-        - led_manager_info: Path to the LED manager info JSON file
-        - resource_catalog_info: Path to the resource catalog info JSON file
         """
         # Load the configuration files
         self.resource_catalog_info = json.load(open(resource_catalog_info))
@@ -36,64 +31,112 @@ class LCDSubscriber:
         self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
 
-        # Initialize the LCD (Raspberry Pi revision 2, I2C address 0x27, backlight enabled)
+        # Initialize the LCD
         self.lcd = LCD(2, 0x27, True)
-        self.lcd.message("Waiting for", 1)
-        self.lcd.message("sensor data...", 2)
 
-    def start(self):
-        """Start MQTT client and subscribe to topics."""
-        self.client.start()
-        time.sleep(3)  # Allow time for the client to connect
-        self.client.mySubscribe("SmartTrafficLight/Sensor/A/#")  # Subscribe to the sensor topic
-        self.client.mySubscribe("SmartTrafficLight/Emergency")  # Subscribe to the emergency topic
+        # Stato attuale delle righe dell'LCD
+        self.line1_text = ""  # Per i warning
+        self.line2_text = ""  # Per il countdown
 
-    def stop(self):
-        """Stop the MQTT client and unsubscribe from topics."""
-        self.client.unsubscribe()
-        time.sleep(3)  # Allow time to unsubscribe
-        self.client.stop()
+        self.update_display("Waiting for", "sensor data...")
+
+    def centered_message(self, text, line):
+        """Centra il testo su una riga dell'LCD"""
+        lcd_width = 16
+        text = text.center(lcd_width)
+        self.lcd.message(text, line)
+
+    def update_display(self, line1=None, line2=None):
+        """
+        Aggiorna solo le righe modificate dell'LCD per evitare flickering.
+        - line1: Testo da mostrare sulla riga 1 (warning)
+        - line2: Testo da mostrare sulla riga 2 (countdown)
+        """
+        if line1 is not None and line1 != self.line1_text:
+            self.line1_text = line1
+            self.centered_message(line1, 1)
+        
+        if line2 is not None and line2 != self.line2_text:
+            self.line2_text = line2
+            self.centered_message(line2, 2)
 
     def notify(self, topic, payload):
-        """Callback method triggered when an MQTT message is received."""
+        """Callback triggered when an MQTT message is received."""
         try:
             message_received = json.loads(payload)
 
-            if topic.startswith("SmartTrafficLight/Sensor/A/"):  # Only process sensor messages
-                if message_received["e"]["n"] == "vul_button" and message_received["e"]["v"]:
-                    self.display_vulnerable_user()
-                elif message_received["e"]["n"] == "ped_sens" and message_received["e"]["v"]:
-                    self.display_crossing_user()
+            # Countdown fase verde
+            if "e" in message_received and message_received["e"]["n"] == "green_light":
+                if message_received["e"]["v"] == "NS":
+                    remaining = message_received["e"]["c"]
+                    self.update_display(line2=f"Red in {remaining}s")
+                return
 
-            elif topic == "SmartTrafficLight/Emergency":
-            # Handle emergency messages
-                if "direction" in message_received:
-                    direction = message_received["direction"]
-                    self.display_emergency_message(direction)
+            # Countdown fase rossa
+            if "e" in message_received and message_received["e"]["n"] == "red_light":
+                if message_received["e"]["v"] == "NS":
+                    remaining = message_received["e"]["c"]
+                    self.update_display(line2=f"Green in {remaining}s")
+                return
+
+            # Countdown emergenza
+            if "e" in message_received and message_received["e"]["n"] == "emergency_light":
+                remaining = message_received["e"]["c"]
+                self.update_display(line1="EMERG VEHICLE!", line2=f"Clear in {remaining}s")
+                return
+
+            # Controllo se il messaggio riguarda un warning
+            if "e" in message_received and "n" in message_received["e"]:
+                warning_type = message_received["e"]["n"]
+                print(f"⚠ Detected event: {warning_type}")  # Debugging
+
+            if warning_type == "vul_button":  # Vulnerable user
+                self.update_display(line1="VULNERABLE USER!")
+                time.sleep(10)
+                self.update_display(line1="")
+                return
+
+            if warning_type == "ped_sens":  # Pedestrian crossing
+                self.update_display(line1="PEDESTRIAN CROSS!")
+                time.sleep(10)
+                self.update_display(line1="")
+                return
 
         except Exception as e:
             print(f"⚠ Error processing message: {e}")
 
     def display_vulnerable_user(self):
-        """Display the 'Vulnerable user crossing' message on the LCD for 5 seconds."""
-        self.lcd.clear()
-        self.lcd.message("Vulnerable user", 1)
-        time.sleep(5)  # Keep the message for 5 seconds
-        self.lcd.clear()  # Clear the display after 5 seconds
+        """Mostra il messaggio per l'utente vulnerabile sulla riga 1."""
+        self.update_display(line1="Vulnerable user")
+        time.sleep(10)
+        self.update_display(line1="")
 
     def display_crossing_user(self):
-        """Display the 'Pedestrian crossing' message on the LCD for 5 seconds."""
-        self.lcd.clear()
-        self.lcd.message("Pedestrian cross", 1)
-        time.sleep(5)
-        self.lcd.clear()  # Clear the display after 5 seconds
+        """Mostra il messaggio per il pedone sulla riga 1."""
+        self.update_display(line1="Pedestrian cross")
+        time.sleep(10)
+        self.update_display(line1="")
 
     def display_emergency_message(self, direction):
-        """Display an emergency message on the LCD for 5 seconds."""
-        self.lcd.clear()
-        self.lcd.message(f"Emerg vehicle!", 1)
-        time.sleep(5)  # Keep the message for 5 seconds
-        self.lcd.clear()  # Clear the display after 5 seconds
+        """Mostra il messaggio di emergenza sulla riga 1."""
+        self.update_display(line1="Emerg vehicle!")
+        time.sleep(15)
+        self.update_display(line1="")
+
+    def start(self):
+        """Start MQTT client and subscribe to topics."""
+        self.client.start()
+        time.sleep(3)  # Allow time for the client to connect
+        self.client.mySubscribe("SmartTrafficLight/Sensor/A/#")
+        self.client.mySubscribe("SmartTrafficLight/Emergency")
+        self.client.mySubscribe("SmartTrafficLight/redLight/A_led_1")
+        self.client.mySubscribe("SmartTrafficLight/greenLight/A_led_1")
+
+    def stop(self):
+        """Stop the MQTT client and unsubscribe from topics."""
+        self.client.unsubscribe()
+        time.sleep(3)
+        self.client.stop()
 
     def background(self):
         """Periodically register to the resource catalog."""
@@ -113,22 +156,18 @@ class LCDSubscriber:
 
 
 if __name__ == '__main__':
-    # Path to the LED manager info and resource catalog info
-    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
-    parent_dir = os.path.dirname(script_dir) 
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(script_dir)
     parent_dir1 = os.path.dirname(parent_dir)
     led_manager_info_path = os.path.join(script_dir, 'LCD_info.json')
     resource_catalog_info_path = os.path.join(parent_dir1, 'resource_catalog', 'resource_catalog_info.json')
 
-    # Create the LCDSubscriber instance and start the threads
     lcd_subscriber = LCDSubscriber(led_manager_info_path, resource_catalog_info_path)
-
-    # Start the MQTT client and subscribe to topics
     lcd_subscriber.start()
 
     try:
         while True:
-            time.sleep(1)  # Keep the script running and listening for messages
+            time.sleep(1)  # Keep the script running
 
     except KeyboardInterrupt:
         print("\nStopping LCD MQTT Subscriber...")

@@ -54,7 +54,7 @@ class EmergencySystem:
         msg = {
             "zone" : zone,
             "direction" : direction,
-            "time" : time.time()
+            "time" : time.time(),
         }
         self.client.myPublish(self.topic, msg)
         print("published\n" + json.dumps(msg))

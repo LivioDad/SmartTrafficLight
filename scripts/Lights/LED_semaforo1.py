@@ -22,6 +22,7 @@ class LEDLights:
         self.topic = led_info["servicesDetails"][0]["topic"]
         self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
         self.topic_red = led_info["servicesDetails"][0]["topic_red"]
+        self.topic_green = led_info["servicesDetails"][0]["topic_green"]
         self.topic_emergency = led_info["servicesDetails"][0]["topic_emergency"]
 
         self.clientID = led_info["Name"]
@@ -167,15 +168,18 @@ class LEDLights:
         self.WE_green.off()
         self.WE_red.on()
         self.publish_red_light("WE", duration)
-        time.sleep(duration)
+        for remaining in range(duration, 0, -1):
+            self.publish_green_light("NS", remaining)
+            time.sleep(1)
 
         # Fase 2: NS rosso, WE verde
         self.NS_green.off()
         self.NS_red.on()
         self.WE_green.on()
         self.WE_red.off()
-        self.publish_red_light("NS", duration)
-        time.sleep(duration)
+        for remaining in range(duration, 0, -1):
+            self.publish_red_light("NS", remaining)
+            time.sleep(1)
 
     def run_emergency_cycle(self, duration, direction):
         """
@@ -198,7 +202,10 @@ class LEDLights:
         else:
             print("Direction not specified, defaulting to standard emergency configuration.")
 
-        time.sleep(duration)
+        # Countdown per il tempo di emergenza
+        for remaining in range(duration, 0, -1):
+            self.publish_emergency_light(direction, remaining)
+            time.sleep(1)
         # Al termine dell'emergency, torna a modalità standard
         with self.cycle_lock:
             self.active_mode = "standard"
@@ -218,6 +225,36 @@ class LEDLights:
         }
         self.client.myPublish(self.topic_red, msg)
         # Debug: print("Published:\n" + json.dumps(msg))
+
+    def publish_green_light(self, direction, remaining):
+        msg = {
+            "intersection": self.intersection_number,
+            "e": {
+                "n": "green_light",
+                "u": "direction",
+                "t": time.time(),
+                "v": direction,
+                "c": remaining,
+            }
+        }
+        self.client.myPublish(self.topic_green, msg)
+        # Debug: print("Published green light message:\n" + json.dumps(msg))
+
+    def publish_emergency_light(self, direction, remaining):
+        """
+        Pubblica il countdown del semaforo in emergenza.
+        """
+        msg = {
+            "intersection": self.intersection_number,
+            "e": {
+                "n": "emergency_light",
+                "u": "direction",
+                "t": time.time(),
+                "v": direction,
+                "c": remaining,
+            }
+        }
+        self.client.myPublish(self.topic_emergency, msg)
 
     def background(self):
         """ Periodically registers the LED system every 10 seconds. """
