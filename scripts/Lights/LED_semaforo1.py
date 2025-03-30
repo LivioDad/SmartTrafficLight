@@ -261,6 +261,7 @@ class LEDLights:
                 "t": time.time(),
                 "v": direction,
                 "c": remaining,
+                "i": self.intersection_number
             }
         }
         self.client.myPublish(self.topic_emergency, msg)

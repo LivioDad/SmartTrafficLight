@@ -28,7 +28,8 @@ class LCDSubscriber:
                 self.topicRed = s["topic_red"]
                 self.topicGreen = s["topic_green"]
                 self.topicTransition = s["topic_transition"]
-
+        self.intersection_number = led_info["Name"].split('_')[2]
+        
         self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
 
@@ -99,7 +100,7 @@ class LCDSubscriber:
                 return
 
             # Countdown emergenza dinamico
-            if "e" in message_received and message_received["e"]["n"] == "emergency_light":
+            if "e" in message_received and message_received["e"]["n"] == "emergency_light" and message_received["e"]["i"] == self.intersection_number:
                 remaining = message_received["e"]["c"]
                 self.update_display(line1="EMERG VEHICLE!", line2=f"Clear in {remaining}s")
                 return

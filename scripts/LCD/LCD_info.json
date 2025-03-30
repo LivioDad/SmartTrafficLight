@@ -1,6 +1,6 @@
 {
     "ID": 999,
-    "Name": "LCD_A",
+    "Name": "LCD_A_1",
     "Type": "LCDManager",
     "zone": "A",
     "availableServices": [
