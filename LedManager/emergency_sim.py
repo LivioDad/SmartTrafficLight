@@ -5,10 +5,8 @@ import requests
 import threading
 import os
 
-
-
-class EmergecySystem:
-    def __init__(self,emergecy_info , resource_catalog_file):
+class EmergencySystem:
+    def __init__(self, emergecy_info , resource_catalog_file):
         # Retrieve broker info from service catalog
         self.resource_catalog = json.load(open(resource_catalog_file))
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' \
@@ -25,15 +23,14 @@ class EmergecySystem:
         self.clientID = info["ID"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, None)
 
-
-
     def register(self):
         """Periodically register the sensor in the resource catalog."""
         request_string = f'http://{self.resource_catalog["ip_address"]}:{self.resource_catalog["ip_port"]}/registerResource'
         data = json.load(open(self.info))
         try:
             r = requests.put(request_string, json.dumps(data, indent=4))
-            print(f'Response: {r.text}')
+            # print(f'Response: {r.text}')
+            # Response is not printed in the console not to interrupt the menu run
         except Exception as e:
             print(f'Error during registration: {e}')
 
@@ -73,12 +70,13 @@ class EmergecySystem:
 if __name__ == '__main__':
     # Automatically retrieve the path of JSON config files
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    parent_dir = os.path.dirname(script_dir)
+    resource_catalog_path = os.path.join(parent_dir, "resource_catalog", "resource_catalog_info.json")
     resource_catalog_path = os.path.normpath(resource_catalog_path)
     emergency_info_path = os.path.join(script_dir, "emergency_sim_info.json")
     emergency_info_path = os.path.normpath(emergency_info_path)
 
-    em = EmergecySystem(resource_catalog_path)
+    em = EmergencySystem(emergency_info_path, resource_catalog_path)
 
 
     b = threading.Thread(name='background', target=em.background)

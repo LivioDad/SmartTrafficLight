@@ -66,9 +66,10 @@ class LCDSubscriber:
                     self.display_crossing_user()
 
             elif topic == "SmartTrafficLight/Emergency":
-                # Handle emergency messages
-                direction = message_received["e"]["n"]
-                self.display_emergency_message(direction)
+            # Handle emergency messages
+                if "direction" in message_received:
+                    direction = message_received["direction"]
+                    self.display_emergency_message(direction)
 
         except Exception as e:
             print(f"⚠ Error processing message: {e}")
@@ -90,7 +91,7 @@ class LCDSubscriber:
     def display_emergency_message(self, direction):
         """Display an emergency message on the LCD for 5 seconds."""
         self.lcd.clear()
-        self.lcd.message(f"Emergency vehicle", 1)
+        self.lcd.message(f"Emerg vehicle!", 1)
         time.sleep(5)  # Keep the message for 5 seconds
         self.lcd.clear()  # Clear the display after 5 seconds
 
