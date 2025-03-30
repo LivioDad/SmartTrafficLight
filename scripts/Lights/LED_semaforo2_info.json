@@ -9,12 +9,15 @@
 			"serviceType": "MQTT",
 			"topic": "SmartTrafficLight/Led/A/#",
 			"topic_zone": "SmartTrafficLight/Led/A",
-			"topic_red": "SmartTrafficLight/Led/A/redLight"
+			"topic_red": "SmartTrafficLight/redLight/A_led_2",
+			"topic_green": "SmartTrafficLight/greenLight/A_led_2",
+			"topic_trans" : "SmartTrafficLight/transitions/A_led_2",
+			"topic_emergency": "SmartTrafficLight/Emergency"
 		}],
-		"standard_duty_cycle": 5,
-		"emergency_duty_cycle": 20,
-		"pedestrian_duty_cycle": 7,
-		"vulnerable_road_users_duty_cycle": 10,
+		"standard_duty_cycle": 3,
+		"emergency_duty_cycle": 15,
+		"pedestrian_duty_cycle": 5,
+		"vulnerable_road_users_duty_cycle": 7,
 		"pins": {
 			"NS_green": 21,
 			"NS_red": 20,

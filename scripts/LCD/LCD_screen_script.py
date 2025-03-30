@@ -5,6 +5,8 @@ from MyMQTT import MyMQTT
 import requests
 import os
 
+""" This script manages an LCD thought to be placed on traffic light A1 in direction NS"""
+
 class LCDSubscriber:
     def __init__(self, led_manager_info, resource_catalog_info):
         # Carica la configurazione
@@ -22,8 +24,10 @@ class LCDSubscriber:
         for s in led_info["serviceDetails"]:
             if s["serviceType"] == 'MQTT':
                 self.topicS = s["topic_subscribe"]
-                self.topicP = s["topic_publish"]
                 self.topicE = s["topic_emergency"]
+                self.topicRed = s["topic_red"]
+                self.topicGreen = s["topic_green"]
+                self.topicTransition = s["topic_transition"]
 
         self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
@@ -112,12 +116,12 @@ class LCDSubscriber:
         """Avvia il client MQTT e si sottoscrive ai topic."""
         self.client.start()
         time.sleep(3)  # Tempo per la connessione
-        self.client.mySubscribe("SmartTrafficLight/Sensor/A/#")
-        self.client.mySubscribe("SmartTrafficLight/Emergency")
-        self.client.mySubscribe("SmartTrafficLight/redLight/A_led_1")
-        self.client.mySubscribe("SmartTrafficLight/greenLight/A_led_1")
-        self.client.mySubscribe("SmartTrafficLight/transitions/A_led_1")
-
+        self.client.mySubscribe(self.topicS)
+        self.client.mySubscribe(self.topicE)
+        self.client.mySubscribe(self.topicRed)
+        self.client.mySubscribe(self.topicGreen)
+        self.client.mySubscribe(self.topicTransition)
+        
     def stop(self):
         """Ferma il client MQTT."""
         self.client.unsubscribe()
