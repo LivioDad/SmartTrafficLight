@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1743341270.4004085,
+    "lastUpdate": 1743351641.6782293,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -23,24 +23,6 @@
                 }
             ],
             "lastUpdate": 1742925848.9842494
-        },
-        {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1743329970.32615
         },
         {
             "ID": "A_led_2",
@@ -81,36 +63,22 @@
                 {
                     "serviceType": "MQTT",
                     "topic": "SmartTrafficLight/Led/A/#",
-                    "topic_zone": "SmartTrafficLight/Led/A"
+                    "topic_zone": "SmartTrafficLight/Led/A",
+                    "topic_red": "SmartTrafficLight/redLight/A_led_1",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
-            "standard_duty_cycle": 3,
-            "emergency_duty_cycle": 20,
-            "pedestrian_duty_cycle": 5,
-            "vulnerable_road_users_duty_cycle": 7,
+            "standard_duty_cycle": 1,
+            "emergency_duty_cycle": 10,
+            "pedestrian_duty_cycle": 3,
+            "vulnerable_road_users_duty_cycle": 5,
             "pins": {
                 "NS_green": 6,
                 "NS_red": 5,
                 "WE_green": 7,
                 "WE_red": 8
             },
-            "lastUpdate": 1743332637.116387
-        },
-        {
-            "ID": "A_c_1",
-            "Name": "DHT11",
-            "Type": "PIR",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1"
-                }
-            ],
-            "lastUpdate": 1743334557.5244634
+            "lastUpdate": 1743351578.4754019
         },
         {
             "ID": "A_p_1",
@@ -126,7 +94,41 @@
                     "topic": "SmartTrafficLight/Sensor/A/1"
                 }
             ],
-            "lastUpdate": 1743334559.8519022
+            "lastUpdate": 1743351637.7613544
+        },
+        {
+            "ID": "A_c_1",
+            "Name": "DHT11",
+            "Type": "PIR",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1"
+                }
+            ],
+            "lastUpdate": 1743351637.8614986
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1743351637.8710842
         },
         {
             "ID": "ES_11",
@@ -141,7 +143,7 @@
                     "topic": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1743341270.4004025
+            "lastUpdate": 1743351641.6782234
         }
     ]
 }
