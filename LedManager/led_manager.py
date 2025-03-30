@@ -98,23 +98,21 @@ class LedManager:
 
         elif topic == self.topicE:
             messageReceived = json.loads(payload)
-            direction = messageReceived["direction"]
-            zone = messageReceived["zone"]
-            msg = {
-                "bn": zone,
-                "e": {
-                    "n": "emergency",
-                    "u": "direction",
-                    "t": time.time(),
-                    "v": direction
+            if "direction" in messageReceived and "zone" in messageReceived:
+                direction = messageReceived["direction"]
+                zone = messageReceived["zone"]
+                msg = {
+                    "bn": zone,
+                    "e": {
+                        "n": "emergency",
+                        "u": "direction",
+                        "t": time.time(),
+                        "v": direction
+                    }
                 }
-            }
-            self.client.myPublish(self.topicP, msg)
-            print("published\n" + json.dumps(msg) + '\nOn topic: ' + f'{self.topicP}')
-            
-
-
-
+                self.client.myPublish(self.topicP, msg)
+                print("published\n" + json.dumps(msg) + '\nOn topic: ' + f'{self.topicP}')
+                
     def publish(self, topicP, obj):
         '''
         if the sensor detects a pedestrian/vulnerable pedestrian/infraction car, the manager publishes under topicPublish + the id of the led

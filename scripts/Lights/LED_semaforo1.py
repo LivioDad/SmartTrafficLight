@@ -23,6 +23,7 @@ class LEDLights:
         self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
         self.topic_red = led_info["servicesDetails"][0]["topic_red"]
         self.topic_green = led_info["servicesDetails"][0]["topic_green"]
+        self.topic_trans = led_info["servicesDetails"][0]["topic_trans"]
         self.topic_emergency = led_info["servicesDetails"][0]["topic_emergency"]
 
         self.clientID = led_info["Name"]
@@ -87,6 +88,7 @@ class LEDLights:
         self.client.stop()
 
     def notify(self, topic, payload):
+        # print("Received message on topic:", topic, payload)
         """
         Callback per i messaggi MQTT.
         Il nuovo comando viene memorizzato come pending e verrà applicato al termine del ciclo corrente.
@@ -107,11 +109,12 @@ class LEDLights:
                 new_duration = self.pedestrian_cycle
 
         elif topic == self.topic_emergency:
-            if payload["zone"] == self.zone:
-                new_mode = "emergency"
-                new_duration = self.emergency_cycle
-                new_direction = payload["direction"]
-                print(f"Emergency announced in zone {payload['zone']} for direction {new_direction}")
+            if "zone" in payload:
+                if payload["zone"] == self.zone:
+                    new_mode = "emergency"
+                    new_duration = self.emergency_cycle
+                    new_direction = payload["direction"]
+                    print(f"Emergency announced in zone {payload['zone']} for direction {new_direction}")
 
         with self.cycle_lock:
             # Se c'è già un comando emergency (attivo o pendente) e il nuovo non lo è, ignoriamo l'update.
@@ -157,6 +160,8 @@ class LEDLights:
                     self.active_direction = None
 
     def run_standard_cycle(self, duration, mode):
+        if duration == self.standard_cycle and self.active_mode == "standard":
+            self.publish_standard_transition()
         """
         Esegue un ciclo standard (due fasi) per la modalità specificata.
         La modalità può essere "standard", "vulnerable" o "pedestrian".
@@ -211,6 +216,10 @@ class LEDLights:
             self.active_mode = "standard"
             self.active_duration = self.standard_cycle
             self.active_direction = None
+            self.pending_mode = None
+            self.pending_duration = None
+            self.pending_direction = None
+            self.publish_standard_transition()
 
     def publish_red_light(self, direction, duration):
         msg = {
@@ -255,6 +264,20 @@ class LEDLights:
             }
         }
         self.client.myPublish(self.topic_emergency, msg)
+
+    def publish_standard_transition(self):
+        """
+        Publishes an MQTT message indicating the transition to standard mode.
+        """
+        msg = {
+            "intersection": self.intersection_number,
+            "e": {
+                "n": "standard_transition",
+                "t": time.time()
+            }
+        }
+        self.client.myPublish(self.topic_trans, msg)
+        print("Published standard transition message.")
 
     def background(self):
         """ Periodically registers the LED system every 10 seconds. """

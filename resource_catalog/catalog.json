@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1743360252.934217,
+    "lastUpdate": 1743369869.5943773,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -52,20 +52,19 @@
             "lastUpdate": 1743332505.32181
         },
         {
-            "ID": "A_c_1",
-            "Name": "DHT11",
-            "Type": "PIR",
-            "zone": "A",
+            "ID": "ES_11",
+            "Name": "EmergecySystem",
+            "Zone": "N/A",
             "availableServices": [
                 "MQTT"
             ],
             "servicesDetails": [
                 {
                     "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1"
+                    "topic": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1743360204.0419683
+            "lastUpdate": 1743369850.2981696
         },
         {
             "ID": "A_led_1",
@@ -82,6 +81,7 @@
                     "topic_zone": "SmartTrafficLight/Led/A",
                     "topic_red": "SmartTrafficLight/redLight/A_led_1",
                     "topic_green": "SmartTrafficLight/greenLight/A_led_1",
+                    "topic_trans": "SmartTrafficLight/transitions/A_led_1",
                     "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
@@ -95,7 +95,7 @@
                 "WE_green": 7,
                 "WE_red": 8
             },
-            "lastUpdate": 1743360215.3517306
+            "lastUpdate": 1743369862.544677
         },
         {
             "ID": "A_p_1",
@@ -111,7 +111,7 @@
                     "topic": "SmartTrafficLight/Sensor/A/1"
                 }
             ],
-            "lastUpdate": 1743360247.016291
+            "lastUpdate": 1743369864.8527732
         },
         {
             "ID": 888,
@@ -129,22 +129,23 @@
                     "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1743360247.025585
+            "lastUpdate": 1743369866.415315
         },
         {
-            "ID": "ES_11",
-            "Name": "EmergecySystem",
-            "Zone": "N/A",
+            "ID": "A_c_1",
+            "Name": "DHT11",
+            "Type": "PIR",
+            "zone": "A",
             "availableServices": [
                 "MQTT"
             ],
             "servicesDetails": [
                 {
                     "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Emergency"
+                    "topic": "SmartTrafficLight/Sensor/A/1"
                 }
             ],
-            "lastUpdate": 1743360252.9342113
+            "lastUpdate": 1743369869.5943718
         }
     ]
 }

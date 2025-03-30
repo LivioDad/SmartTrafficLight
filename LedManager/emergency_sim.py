@@ -50,7 +50,7 @@ class EmergencySystem:
     def foreground(self):
         self.start()
 
-    def call_emergency(self , zone , direction):
+    def call_emergency(self, zone, direction):
         msg = {
             "zone" : zone,
             "direction" : direction,
@@ -65,7 +65,6 @@ class EmergencySystem:
             zone = input("Enter zone (we only have A ...): ")
             direction = input("Enter direction (NS or WE): ")
             self.call_emergency(zone, direction)
-
 
 if __name__ == '__main__':
     # Automatically retrieve the path of JSON config files

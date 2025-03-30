@@ -7,21 +7,18 @@ import os
 
 class LCDSubscriber:
     def __init__(self, led_manager_info, resource_catalog_info):
-        """
-        Initializes the LCD display and MQTT client by getting broker and topic details from the provided configuration files.
-        """
-        # Load the configuration files
+        # Carica la configurazione
         self.resource_catalog_info = json.load(open(resource_catalog_info))
         led_info = json.load(open(led_manager_info))
 
-        # Request broker info from resource catalog
+        # Richiesta informazioni dal resource catalog
         request_string = f'http://{self.resource_catalog_info["ip_address"]}:{self.resource_catalog_info["ip_port"]}/broker'
         r = requests.get(request_string)
         rjson = json.loads(r.text)
         self.broker = rjson["name"]
         self.port = rjson["port"]
 
-        # Extract topics from LED manager info
+        # Estrai i topic dal LED manager info
         for s in led_info["serviceDetails"]:
             if s["serviceType"] == 'MQTT':
                 self.topicS = s["topic_subscribe"]
@@ -31,12 +28,16 @@ class LCDSubscriber:
         self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
 
-        # Initialize the LCD
+        # Inizializza LCD
         self.lcd = LCD(2, 0x27, True)
 
-        # Stato attuale delle righe dell'LCD
-        self.line1_text = ""  # Per i warning
-        self.line2_text = ""  # Per il countdown
+        # Stato LCD
+        self.line1_text = ""  # Warning
+        self.line2_text = ""  # Countdown
+
+        # Controllo warning
+        self.warning_active = False
+        self.warning_end_time = 0  # Tempo in cui il warning deve scomparire
 
         self.update_display("Waiting for", "sensor data...")
 
@@ -47,11 +48,7 @@ class LCDSubscriber:
         self.lcd.message(text, line)
 
     def update_display(self, line1=None, line2=None):
-        """
-        Aggiorna solo le righe modificate dell'LCD per evitare flickering.
-        - line1: Testo da mostrare sulla riga 1 (warning)
-        - line2: Testo da mostrare sulla riga 2 (countdown)
-        """
+        """Aggiorna solo le righe modificate dell'LCD"""
         if line1 is not None and line1 != self.line1_text:
             self.line1_text = line1
             self.centered_message(line1, 1)
@@ -61,98 +58,71 @@ class LCDSubscriber:
             self.centered_message(line2, 2)
 
     def notify(self, topic, payload):
-        """Callback triggered when an MQTT message is received."""
+        # print(f"Received message on topic {topic}: {payload}")
+        """Callback quando arriva un messaggio MQTT."""
         try:
             message_received = json.loads(payload)
 
-            # Countdown fase verde
+            # Warning
+            if "e" in message_received and "n" in message_received["e"]:
+                warning_type = message_received["e"]["n"]
+
+            if warning_type == "vul_button":  # Utente vulnerabile
+                self.show_warning("VULNERABLE USER!")
+                return
+
+            if warning_type == "ped_sens":  # Pedone
+                self.show_warning("PEDESTRIAN CROSS!")
+                return
+
+            # Check for standard transition message
+            if "e" in message_received and message_received["e"]["n"] == "standard_transition":
+                self.update_display(line1="")  # Clear line 1 immediately
+                return  
+
+            # Countdown semaforo verde
             if "e" in message_received and message_received["e"]["n"] == "green_light":
                 if message_received["e"]["v"] == "NS":
                     remaining = message_received["e"]["c"]
                     self.update_display(line2=f"Red in {remaining}s")
                 return
 
-            # Countdown fase rossa
+            # Countdown semaforo rosso
             if "e" in message_received and message_received["e"]["n"] == "red_light":
                 if message_received["e"]["v"] == "NS":
                     remaining = message_received["e"]["c"]
                     self.update_display(line2=f"Green in {remaining}s")
                 return
 
-            # Countdown emergenza
+            # Countdown emergenza dinamico
             if "e" in message_received and message_received["e"]["n"] == "emergency_light":
                 remaining = message_received["e"]["c"]
                 self.update_display(line1="EMERG VEHICLE!", line2=f"Clear in {remaining}s")
                 return
 
-            # Controllo se il messaggio riguarda un warning
-            if "e" in message_received and "n" in message_received["e"]:
-                warning_type = message_received["e"]["n"]
-                print(f"⚠ Detected event: {warning_type}")  # Debugging
-
-            if warning_type == "vul_button":  # Vulnerable user
-                self.update_display(line1="VULNERABLE USER!")
-                time.sleep(10)
-                self.update_display(line1="")
-                return
-
-            if warning_type == "ped_sens":  # Pedestrian crossing
-                self.update_display(line1="PEDESTRIAN CROSS!")
-                time.sleep(10)
-                self.update_display(line1="")
-                return
 
         except Exception as e:
             print(f"⚠ Error processing message: {e}")
 
-    def display_vulnerable_user(self):
-        """Mostra il messaggio per l'utente vulnerabile sulla riga 1."""
-        self.update_display(line1="Vulnerable user")
-        time.sleep(10)
-        self.update_display(line1="")
-
-    def display_crossing_user(self):
-        """Mostra il messaggio per il pedone sulla riga 1."""
-        self.update_display(line1="Pedestrian cross")
-        time.sleep(10)
-        self.update_display(line1="")
-
-    def display_emergency_message(self, direction):
-        """Mostra il messaggio di emergenza sulla riga 1."""
-        self.update_display(line1="Emerg vehicle!")
-        time.sleep(15)
-        self.update_display(line1="")
+    def show_warning(self, message):
+        """Mostra un messaggio di avviso sull'LCD."""
+        self.update_display(line1=message)
 
     def start(self):
-        """Start MQTT client and subscribe to topics."""
+        """Avvia il client MQTT e si sottoscrive ai topic."""
         self.client.start()
-        time.sleep(3)  # Allow time for the client to connect
+        time.sleep(3)  # Tempo per la connessione
         self.client.mySubscribe("SmartTrafficLight/Sensor/A/#")
         self.client.mySubscribe("SmartTrafficLight/Emergency")
         self.client.mySubscribe("SmartTrafficLight/redLight/A_led_1")
         self.client.mySubscribe("SmartTrafficLight/greenLight/A_led_1")
+        self.client.mySubscribe("SmartTrafficLight/transitions/A_led_1")
 
     def stop(self):
-        """Stop the MQTT client and unsubscribe from topics."""
+        """Ferma il client MQTT."""
         self.client.unsubscribe()
         time.sleep(3)
         self.client.stop()
-
-    def background(self):
-        """Periodically register to the resource catalog."""
-        while True:
-            self.register()
-            time.sleep(10)
-
-    def register(self):
-        """Register periodically to the resource catalog to confirm activity."""
-        request_string = f'http://{self.resource_catalog_info["ip_address"]}:{self.resource_catalog_info["ip_port"]}/registerResource'
-        data = json.load(open(self.led_manager_info))
-        try:
-            r = requests.put(request_string, json.dumps(data, indent=4))
-            print(f'Response: {r.text}')
-        except:
-            print("An error occurred during registration")
 
 
 if __name__ == '__main__':
@@ -167,7 +137,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            time.sleep(1)  # Keep the script running
+            time.sleep(1)  # Mantiene il programma in esecuzione
 
     except KeyboardInterrupt:
         print("\nStopping LCD MQTT Subscriber...")
