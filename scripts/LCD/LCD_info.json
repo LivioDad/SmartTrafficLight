@@ -1,7 +1,7 @@
 {
-    "ID": 888,
-    "Name": "LedManagerA",
-    "Type": "LedManager",
+    "ID": 999,
+    "Name": "LCD_A",
+    "Type": "LCDManager",
     "zone": "A",
     "availableServices": [
         "MQTT"

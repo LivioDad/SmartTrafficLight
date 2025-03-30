@@ -11,10 +11,10 @@
 			"topic_zone": "SmartTrafficLight/Led/A",
 			"topic_red": "SmartTrafficLight/Led/A/redLight"
 		}],
-		"standard_duty_cycle": 5,
+		"standard_duty_cycle": 3,
 		"emergency_duty_cycle": 20,
-		"pedestrian_duty_cycle": 7,
-		"vulnerable_road_users_duty_cycle": 10,
+		"pedestrian_duty_cycle": 5,
+		"vulnerable_road_users_duty_cycle": 7,
 		"pins": {
 			"NS_green": 6,
 			"NS_red": 5,

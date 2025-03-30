@@ -66,7 +66,7 @@ class PedestrianButton:
                 }
             }
             self.client.myPublish(self.topic, msg)
-            print("Published:\n" + json.dumps(msg))
+            print("Published:\n" + json.dumps(msg) + " to topic " + self.topic)
             self.last_message_time = current_time  # Update last press time
 
 

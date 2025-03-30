@@ -3,6 +3,7 @@ import time
 import json
 import requests
 import threading
+import os
 
 
 class LedManager:
@@ -21,9 +22,9 @@ class LedManager:
         info = json.load(open(self.led_manager_file))
         for s in info["serviceDetails"]:
             if s["serviceType"]=='MQTT':
-                self.topicS = s["topicS"] #topic to which it is subscribed to receive messages from sensors
-                self.topicP = s["topicP"] #topic on which it publishes messages for the acrivations of leds
-                self.topicE = s["topicE"] #topic on which it publishes messages for the acrivations of leds in emergency cases
+                self.topicS = s["topic_subscribe"] #topic to which it is subscribed to receive messages from sensors
+                self.topicP = s["topic_publish"] #topic on which it publishes messages for the activations of leds
+                self.topicE = s["topic_emergency"] #topic on which it publishes messages for the acrivations of leds in emergency cases
         self.clientID = info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self) #configure MQTT
 
@@ -54,6 +55,7 @@ class LedManager:
         self.client.stop()
 
     def notify(self, topic, payload):
+        # print(f"Received message on topic {topic}: {payload}")
         '''
         when it receives a message from a sensor, the message is processed, the message is in the form:
         msg = {
@@ -67,8 +69,9 @@ class LedManager:
         }
 
         '''
-        if topic == self.topicS:
+        if topic.startswith(self.topicS[:-1]):  # Removes the '#' and compares:
             messageReceived = json.loads(payload)
+            print(messageReceived)
             bn = messageReceived["bn"] #identifies the sensor that sended the message
             id = bn.split('_')
             sensorType = id[1] #sensor type (b for the button , c for the movement sensor , I for infraction sensor)
@@ -79,6 +82,7 @@ class LedManager:
                 if messageReceived["e"]["v"]: #if the value of the event its true (not 0)
                     specific_topic = self.topicP + '/' + trafficLightID
                     self.publish(specific_topic, obj) #publishes a messages to that led with the object detected, a vulnerable pedestrian
+                    print("LED were notified of a vulnerable pedestrian")
 
             elif messageReceived["e"]["n"] == "ped_sens": #if the message its from a movement sensor (pedestrian)
                 obj = "pedestrian"
@@ -138,13 +142,17 @@ class LedManager:
 
 
 if __name__ == '__main__':
-    ledMan = LedManager('led_manager_info.json', 'resource_catalog_info.json')
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
+    led_manager_info_path = os.path.join(script_dir, 'led_manager_info.json')
+    resource_catalog_info_path = os.path.join(os.path.dirname(script_dir), 'resource_catalog', 'resource_catalog_info.json')
+
+    ledMan = LedManager(led_manager_info_path, resource_catalog_info_path)
 
     b = threading.Thread(name='background', target=ledMan.background)
     f = threading.Thread(name='foreground', target=ledMan.foreground)
 
     b.start() #activate the backgorund periodically register
-    f.start() #activate the subsxirpiton to MQTT topics
+    f.start() #activate the subscirpiton to MQTT topics
 
     while True:
         time.sleep(3)
