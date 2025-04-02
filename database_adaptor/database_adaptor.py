@@ -5,32 +5,33 @@ import time
 import threading
 import requests
 from urllib.parse import parse_qs
+import os
 
-DB_PATH = "infraction_database.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "infraction_database.db")
 
 class DatabaseAdaptor:
     
-    def __init__(self, resource_info_path, catalog_info_path):
+    def __init__(self, resource_info_path, resource_catalog_file):
+        self.info = resource_info_path
+        # Retrieve broker info from service catalog
+        self.resource_catalog = json.load(open(resource_catalog_file))
+        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' \
+                         + self.resource_catalog["ip_port"] + '/broker'
+        r = requests.get(request_string)
+        rjson = json.loads(r.text)
+        self.broker = rjson["name"]
+        self.port = rjson["port"]
         self.init_db()
 
-        # Load JSON files
-        self.resource_info = json.load(open(resource_info_path))
-        catalog_info = json.load(open(catalog_info_path))
-        self.catalog_url = f"http://{catalog_info['ip_address']}:{catalog_info['ip_port']}/registerResource"
-
-        # Start background thread for registration
-        threading.Thread(target=self.register_to_catalog, daemon=True).start()
-
-    def register_to_catalog(self):
-        """ Periodically register this service to the catalog """
-        while True:
-            try:
-                self.resource_info["lastUpdate"] = time.time()
-                response = requests.put(self.catalog_url, json=self.resource_info)
-                print(f"📡 Registered to catalog: {response.status_code} - {response.text}")
-            except Exception as e:
-                print(f"❌ Registration error: {e}")
-            time.sleep(10)
+    def register(self):
+        """Periodically register the sensor in the resource catalog."""
+        request_string = f'http://{self.resource_catalog["ip_address"]}:{self.resource_catalog["ip_port"]}/registerResource'
+        data = json.load(open(self.info))
+        try:
+            r = requests.put(request_string, json.dumps(data, indent=4))
+            print(f'Response: {r.text}')
+        except Exception as e:
+            print(f'Error during registration: {e}')
 
     def init_db(self):
         """ Initializes the database table if it does not exist. """
@@ -119,10 +120,26 @@ class DatabaseAdaptor:
         except Exception as e:
             cherrypy.response.status = 500
             return {"error": f"Internal Server Error: {e}"}
+        
+    def background(self):
+        while True:
+            self.register()
+            time.sleep(10)
 
+    def start(self):
+        self.background()
 
 if __name__ == '__main__':
-    cherrypy.quickstart(DatabaseAdaptor("resource_info_database_adaptor.json", "resource_catalog_info.json"), '/', {
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    info_path = os.path.join(script_dir, "database_adaptor_info.json")
+    parent_dir = os.path.dirname(script_dir)
+    resource_catalog_path = os.path.join(parent_dir, "resource_catalog", "resource_catalog_info.json")
+
+    DbAdaptor = DatabaseAdaptor(info_path, resource_catalog_path)
+    #threading.Thread(target=DbAdaptor.foreground).start()
+    threading.Thread(target=DbAdaptor.background).start()
+
+    cherrypy.quickstart(DbAdaptor, '/', {
         '/': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
             'tools.response_headers.on': True,

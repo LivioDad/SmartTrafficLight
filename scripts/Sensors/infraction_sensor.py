@@ -39,7 +39,6 @@ class InfractionSensor:
 
         self.pir = DistanceSensor(echo=27, trigger=22)
         self.converter = { "NS" : 1 , "WE" : 2}
-
         
         self.current_car_time = time.time()
         # Avvia il simulatore di auto in un thread separato
