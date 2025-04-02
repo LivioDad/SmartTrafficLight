@@ -5,12 +5,10 @@ import json
 import requests
 from gpiozero import DistanceSensor
 import threading
-
 import urllib.request
 import requests
 import threading
 import json
-
 import random
 import os
 
@@ -35,10 +33,11 @@ class InfractionSensor:
         self.client = MyMQTT(self.clientID, self.broker, self.port, None)
         self.distance_threshold = info["distance_threshold"]
         self.warning_cooldown = info["warning_cooldown"]
+        self.isred = False
 
         self.last_warning_time = 0
 
-        self.pir  = DistanceSensor(echo=27, trigger=22)
+        self.pir = DistanceSensor(echo=27, trigger=22)
         self.converter = { "NS" : 1 , "WE" : 2}
 
         
@@ -47,9 +46,6 @@ class InfractionSensor:
         self.simulator_running = True
         self.simulator_thread = threading.Thread(target=self.car_simulator, daemon=True)
         self.simulator_thread.start()
-
-
-
 
     def register(self):
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
@@ -61,17 +57,16 @@ class InfractionSensor:
             print("An error occurred during registration")
 
     def notify(self, topic, payload):
+        self.isred = False
         payload = json.loads(payload)
         print(f'Message received: {payload}\n Topic: {topic}')
         intersection = payload["intersection"]
         direction = payload["e"]["v"]
-        infraction_time = payload["e"]["t"]
-        cycle = payload["e"]["c"]
+        red_switch_time = payload["e"]["t"]
+        red_duration_left = payload["e"]["c"]
 
-        car_time = self.current_car_time
-
-        if car_time > self.last_warning_time and car_time < (self.last_warning_time + cycle):
-            self.publish_red_infraction(direction ,intersection , infraction_time )
+        if red_switch_time + red_duration_left > time.time():
+            self.isred = True
 
     def publish_red_infraction(self , direction , intersection , infraction_time):
         msg = {
@@ -81,13 +76,6 @@ class InfractionSensor:
             }
         self.client.myPublish(self.topic_infraction, msg)
         print("Published:\n" + json.dumps(msg))
-
-
-    def car_simulator(self):
-        while self.simulator_running:
-            self.current_car_time = time.time()
-            time.sleep(2)
-
 
     def start(self):
         self.client.start()
@@ -99,12 +87,12 @@ class InfractionSensor:
         distance = self.pir.distance * 100  # Convert to cm
         print(f"Distance: {distance:.2f} cm")
         
-        # If the distance is less than the threshold, publish MQTT message
-        if distance < self.distance_threshold:
-            activation_time = time
-            if activation_time - self.last_warning_time > self.warning_cooldown:  # Check if enough time has passed
+        # If the distance is less than the threshold and the light is red, publish MQTT message and create infraction
+        if distance < self.distance_threshold and self.isred:
+            transit_time = time
+            if transit_time - self.last_warning_time > self.warning_cooldown:  # Check if enough time has passed
                 print(f"Vehicle detected! ({time.time():.2f})")
-            self.last_warning_time = activation_time  # Update the last warning time
+            self.last_warning_time = transit_time  # Update the last warning time
         
         time.sleep(0.1)  # Wait time to avoid an overly fast loop
        
@@ -137,7 +125,6 @@ if __name__ == '__main__':
         while True:
             pres.presence_callback(time.time())
             time.sleep(0.5)
-
         #pause()
 
     finally:
