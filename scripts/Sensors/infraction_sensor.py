@@ -40,12 +40,7 @@ class InfractionSensor:
         self.pir = DistanceSensor(echo=27, trigger=22)
         self.converter = { "NS" : 1 , "WE" : 2}
 
-        
-        self.current_car_time = time.time()
-        # Avvia il simulatore di auto in un thread separato
-        self.simulator_running = True
-        self.simulator_thread = threading.Thread(target=self.car_simulator, daemon=True)
-        self.simulator_thread.start()
+    
 
     def register(self):
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
@@ -60,19 +55,19 @@ class InfractionSensor:
         self.isred = False
         payload = json.loads(payload)
         print(f'Message received: {payload}\n Topic: {topic}')
-        intersection = payload["intersection"]
-        direction = payload["e"]["v"]
+        self.intersection = payload["intersection"]
+        self.direction = payload["e"]["v"]
         red_switch_time = payload["e"]["t"]
         red_duration_left = payload["e"]["c"]
 
         if red_switch_time + red_duration_left > time.time():
             self.isred = True
 
-    def publish_red_infraction(self , direction , intersection , infraction_time):
+    def publish_red_infraction(self):
         msg = {
-                "intersection" : intersection,
-                "timestamp" : infraction_time,
-                "station": self.converter[direction]
+                "intersection" : self.intersection,
+                "timestamp" : time.time(),
+                "station": self.converter[self.direction]
             }
         self.client.myPublish(self.topic_infraction, msg)
         print("Published:\n" + json.dumps(msg))
@@ -83,16 +78,17 @@ class InfractionSensor:
     def stop(self):
         self.client.stop()
 
-    def presence_callback(self, time):
+    def presence_callback(self):
         distance = self.pir.distance * 100  # Convert to cm
         print(f"Distance: {distance:.2f} cm")
         
         # If the distance is less than the threshold and the light is red, publish MQTT message and create infraction
         if distance < self.distance_threshold and self.isred:
-            transit_time = time
+            transit_time = time.time()
             if transit_time - self.last_warning_time > self.warning_cooldown:  # Check if enough time has passed
                 print(f"Vehicle detected! ({time.time():.2f})")
             self.last_warning_time = transit_time  # Update the last warning time
+            self.publish_red_infraction()
         
         time.sleep(0.1)  # Wait time to avoid an overly fast loop
        
@@ -123,7 +119,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            pres.presence_callback(time.time())
+            pres.presence_callback()
             time.sleep(0.5)
         #pause()
 
