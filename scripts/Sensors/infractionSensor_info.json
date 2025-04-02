@@ -13,7 +13,6 @@
         "serviceType": "MQTT",
         "topic": "SmartTrafficLight/Sensor/A/1",
         "topic_red": "SmartTrafficLight/redLight/A_led_1",
-        "topic_green": "SmartTrafficLight/greenLight/A_led_1",
         "topic_infraction" : "SmartTrafficLight/Led/A/redInfraction"
       }
     ]

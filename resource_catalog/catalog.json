@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1743371577.4049976,
+    "lastUpdate": 1743590792.631895,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -150,6 +150,43 @@
                 }
             ],
             "lastUpdate": 1743371577.40499
+        },
+        {
+            "ID": "telegram_bot_1",
+            "Name": "Telegram Bot",
+            "Type": "Bot",
+            "zone": "N/A",
+            "availableServices": [
+                "REST",
+                "Telegram"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://localhost:8082"
+                },
+                {
+                    "serviceType": "Telegram",
+                    "bot_name": "TrafficBot"
+                }
+            ],
+            "lastUpdate": 1743590762.0812645
+        },
+        {
+            "ID": "db_connector_1",
+            "Name": "Database Adaptor",
+            "Type": "Storage",
+            "zone": "N/A",
+            "availableServices": [
+                "REST"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://localhost:8080/infraction"
+                }
+            ],
+            "lastUpdate": 1743590792.631889
         }
     ]
 }
