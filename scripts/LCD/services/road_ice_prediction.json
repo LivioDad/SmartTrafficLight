@@ -1,0 +1,9 @@
+[
+    {"temperature": -15, "humidity": 95, "ice_risk": 0.95},
+    {"temperature": -10, "humidity": 90, "ice_risk": 0.90},
+    {"temperature": -5, "humidity": 85, "ice_risk": 0.85},
+    {"temperature": 0, "humidity": 80, "ice_risk": 0.70},
+    {"temperature": 5, "humidity": 70, "ice_risk": 0.50},
+    {"temperature": 10, "humidity": 60, "ice_risk": 0.30},
+    {"temperature": 15, "humidity": 50, "ice_risk": 0.10}
+]
