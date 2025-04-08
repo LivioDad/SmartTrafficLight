@@ -121,8 +121,18 @@ class ViolationDetector:
 # resource_catalog_info.json: contains information about the service catalog
 
 if __name__ == "__main__":
+    import os
+
+    # Dynamically determine the base directory
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Construct paths for configuration files
+    config_path = os.path.join(base_dir, "config.json")
+    resource_info_path = os.path.join(base_dir, "resource_info_violation_detector.json")
+    resource_catalog_info_path = os.path.join(base_dir, "resource_catalog_info.json")
+
     # Load MQTT and client config
-    with open("config.json") as f:
+    with open(config_path) as f:
         config = json.load(f)
 
     detector = ViolationDetector(
@@ -130,8 +140,8 @@ if __name__ == "__main__":
         mqtt_broker=config["mqtt_broker"],
         mqtt_port=config["mqtt_port"],
         mqtt_topic=config["mqtt_topic"],
-        resource_info_path="resource_info_violation_detector.json",
-        resource_catalog_info_path="resource_catalog_info.json"
+        resource_info_path=resource_info_path,
+        resource_catalog_info_path=resource_catalog_info_path
     )
 
     detector.run()

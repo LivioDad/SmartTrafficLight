@@ -25,8 +25,7 @@ class LCDSubscriber:
             if s["serviceType"] == 'MQTT':
                 self.topicS = s["topic_subscribe"]
                 self.topicE = s["topic_emergency"]
-                self.topicRed = s["topic_red"]
-                self.topicGreen = s["topic_green"]
+                self.topicStatus = s["topic_status"]
                 self.topicTransition = s["topic_transition"]
         self.intersection_number = led_info["Name"].split('_')[2]
         
@@ -89,14 +88,14 @@ class LCDSubscriber:
             if "e" in message_received and message_received["e"]["n"] == "green_light":
                 if message_received["e"]["v"] == "NS":
                     remaining = message_received["e"]["c"]
-                    self.update_display(line2=f"Red in {remaining}s")
+                    self.update_display(line2=f"Red in {remaining-1}s")
                 return
 
             # Countdown semaforo rosso
             if "e" in message_received and message_received["e"]["n"] == "red_light":
                 if message_received["e"]["v"] == "NS":
                     remaining = message_received["e"]["c"]
-                    self.update_display(line2=f"Green in {remaining}s")
+                    self.update_display(line2=f"Green in {remaining-1}s")
                 return
 
             # Countdown emergenza dinamico
@@ -104,7 +103,6 @@ class LCDSubscriber:
                 remaining = message_received["e"]["c"]
                 self.update_display(line1="EMERG VEHICLE!", line2=f"Clear in {remaining}s")
                 return
-
 
         except Exception as e:
             print(f"⚠ Error processing message: {e}")
@@ -119,8 +117,7 @@ class LCDSubscriber:
         time.sleep(3)  # Tempo per la connessione
         self.client.mySubscribe(self.topicS)
         self.client.mySubscribe(self.topicE)
-        self.client.mySubscribe(self.topicRed)
-        self.client.mySubscribe(self.topicGreen)
+        self.client.mySubscribe(self.topicStatus)
         self.client.mySubscribe(self.topicTransition)
         
     def stop(self):
@@ -128,7 +125,6 @@ class LCDSubscriber:
         self.client.unsubscribe()
         time.sleep(3)
         self.client.stop()
-
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))

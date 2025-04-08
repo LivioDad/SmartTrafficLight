@@ -27,10 +27,10 @@ class InfractionSensor:
         self.infractionSensor_info = infractionSensor_info
         info = json.load(open(self.infractionSensor_info))
         self.topic = info["servicesDetails"][0]["topic"]
-        self.topic_red = info["servicesDetails"][0]["topic_red"]
+        self.topic_status = info["servicesDetails"][0]["topic_status"]
         self.topic_infraction =  info["servicesDetails"][0]["topic_infraction"]
         self.clientID = info["ID"]
-        self.client = MyMQTT(self.clientID, self.broker, self.port, None)
+        self.client = MyMQTT(self.clientID, self.broker, self.port, self)
         self.distance_threshold = info["distance_threshold"]
         self.warning_cooldown = info["warning_cooldown"]
         self.isred = False
@@ -39,8 +39,6 @@ class InfractionSensor:
 
         self.pir = DistanceSensor(echo=27, trigger=22)
         self.converter = { "NS" : 1 , "WE" : 2}
-
-    
 
     def register(self):
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
@@ -52,16 +50,18 @@ class InfractionSensor:
             print("An error occurred during registration")
 
     def notify(self, topic, payload):
-        self.isred = False
         payload = json.loads(payload)
-        print(f'Message received: {payload}\n Topic: {topic}')
+        # print(f'Message received: {payload}\n Topic: {topic}')
         self.intersection = payload["intersection"]
         self.direction = payload["e"]["v"]
-        red_switch_time = payload["e"]["t"]
-        red_duration_left = payload["e"]["c"]
+        self.status = payload["e"]["n"]
 
-        if red_switch_time + red_duration_left > time.time():
+        if self.status == "red_light":
             self.isred = True
+            # print("Red light is ON")
+        if self.status == "green_light":
+            self.isred = False 
+            # print("Red light is OFF")
 
     def publish_red_infraction(self):
         msg = {
@@ -74,20 +74,19 @@ class InfractionSensor:
 
     def start(self):
         self.client.start()
+        self.client.mySubscribe(self.topic_status)
 
     def stop(self):
         self.client.stop()
 
     def presence_callback(self):
         distance = self.pir.distance * 100  # Convert to cm
-        print(f"Distance: {distance:.2f} cm")
-        
+        # print(f"Distance: {distance:.2f} cm")
+
         # If the distance is less than the threshold and the light is red, publish MQTT message and create infraction
         if distance < self.distance_threshold and self.isred:
             transit_time = time.time()
-            if transit_time - self.last_warning_time > self.warning_cooldown:  # Check if enough time has passed
-                print(f"Vehicle detected! ({time.time():.2f})")
-            self.last_warning_time = transit_time  # Update the last warning time
+            print(f"Vehicle detected! ({time.time():.2f})")
             self.publish_red_infraction()
         
         time.sleep(0.1)  # Wait time to avoid an overly fast loop

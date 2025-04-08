@@ -12,8 +12,7 @@
             "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
             "topic_publish": "SmartTrafficLight/Led/A",
             "topic_emergency": "SmartTrafficLight/Emergency",
-            "topic_red": "SmartTrafficLight/redLight/A_led_1",
-            "topic_green": "SmartTrafficLight/greenLight/A_led_1",
+            "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
             "topic_transition": "SmartTrafficLight/transitions/A_led_1"
         }
     ]

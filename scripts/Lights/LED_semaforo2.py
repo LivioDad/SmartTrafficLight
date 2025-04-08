@@ -21,8 +21,7 @@ class LEDLights:
         self.led_info = led_info
         self.topic = led_info["servicesDetails"][0]["topic"]
         self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
-        self.topic_red = led_info["servicesDetails"][0]["topic_red"]
-        self.topic_green = led_info["servicesDetails"][0]["topic_green"]
+        self.topic_status = led_info["servicesDetails"][0]["topic_status"]
         self.topic_trans = led_info["servicesDetails"][0]["topic_trans"]
         self.topic_emergency = led_info["servicesDetails"][0]["topic_emergency"]
 
@@ -229,10 +228,10 @@ class LEDLights:
                 "u": "direction",
                 "t": time.time(),
                 "v": direction,
-                "c": duration
+                "c": duration,
             }
         }
-        self.client.myPublish(self.topic_red, msg)
+        self.client.myPublish(self.topic_status, msg)
         # Debug: print("Published:\n" + json.dumps(msg))
 
     def publish_green_light(self, direction, remaining):
@@ -246,7 +245,7 @@ class LEDLights:
                 "c": remaining,
             }
         }
-        self.client.myPublish(self.topic_green, msg)
+        self.client.myPublish(self.topic_status, msg)
         # Debug: print("Published green light message:\n" + json.dumps(msg))
 
     def publish_emergency_light(self, direction, remaining):

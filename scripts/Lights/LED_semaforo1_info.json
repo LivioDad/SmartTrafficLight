@@ -9,8 +9,7 @@
 			"serviceType": "MQTT",
 			"topic": "SmartTrafficLight/Led/A/#",
 			"topic_zone": "SmartTrafficLight/Led/A",
-			"topic_red": "SmartTrafficLight/redLight/A_led_1",
-			"topic_green": "SmartTrafficLight/greenLight/A_led_1",
+			"topic_status": "SmartTrafficLight/LightStatus/A_led_1",
 			"topic_trans" : "SmartTrafficLight/transitions/A_led_1",
 			"topic_emergency": "SmartTrafficLight/Emergency"
 		}],
