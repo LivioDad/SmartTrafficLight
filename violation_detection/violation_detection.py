@@ -4,6 +4,7 @@ import string
 import requests
 import threading
 import time
+import os
 from MyMQTT import MyMQTT
 
 
@@ -11,15 +12,19 @@ class ViolationDetector:
     def __init__(self, client_id, mqtt_broker, mqtt_port, mqtt_topic,
                  resource_info_path, resource_catalog_info_path):
 
-        # MQTT
+        # MQTT setup
         self.client_id = client_id
         self.mqtt_topic = mqtt_topic
         self.mqtt_client = MyMQTT(client_id, mqtt_broker, mqtt_port, self)
 
-        # Catalog info
-        self.resource_info_path = resource_info_path
-        self.resource_info = json.load(open(resource_info_path))
-        self.resource_catalog_info = json.load(open(resource_catalog_info_path))
+        # Load resource info
+        with open(resource_info_path) as f:
+            self.resource_info = json.load(f)
+
+        # Load catalog info
+        with open(resource_catalog_info_path) as f:
+            self.resource_catalog_info = json.load(f)
+
         self.catalog_ip = self.resource_catalog_info["ip_address"]
         self.catalog_port = self.resource_catalog_info["ip_port"]
         self.catalog_register_url = f"http://{self.catalog_ip}:{self.catalog_port}/registerResource"
@@ -34,7 +39,7 @@ class ViolationDetector:
         self.mqtt_client.stop()
 
     def notify(self, topic, payload):
-        """Callback on MQTT message"""
+        """Callback when a message is received via MQTT"""
         try:
             payload = json.loads(payload.decode())
             print(f"📩 Message received on topic '{topic}': {payload}")
@@ -47,7 +52,6 @@ class ViolationDetector:
                 return
 
             plate = self.generate_random_plate()
-
             violation_data = {
                 "plate": plate,
                 "date": timestamp,
@@ -66,7 +70,7 @@ class ViolationDetector:
         return f"{letters()}{numbers()}{letters()}"
 
     def get_db_adaptor_url(self):
-        """Discover DB Adaptor REST endpoint from Service Catalog"""
+        """Retrieve DB Adaptor REST URL from service catalog"""
         try:
             url = f"http://{self.catalog_ip}:{self.catalog_port}/resourceID?ID=db_connector_1"
             response = requests.get(url)
@@ -85,7 +89,7 @@ class ViolationDetector:
         return None
 
     def send_violation_to_db(self, data):
-        """Send violation info to the discovered DB Adaptor"""
+        """Send a new violation to the DB Adaptor"""
         db_url = self.get_db_adaptor_url()
         if not db_url:
             print("⚠️ Cannot send violation: DB adaptor not available.")
@@ -101,7 +105,7 @@ class ViolationDetector:
             print(f"❌ Error sending POST to DB adaptor: {e}")
 
     def register_to_catalog(self):
-        """Register periodically to the service catalog"""
+        """Register periodically to the Service Catalog"""
         while True:
             try:
                 self.resource_info["lastUpdate"] = time.time()
@@ -112,41 +116,38 @@ class ViolationDetector:
             time.sleep(10)
 
     def run(self):
-        """Start MQTT and catalog registration in background"""
+        """Launch MQTT + registration in background threads"""
         threading.Thread(target=self.register_to_catalog, name="register_thread", daemon=True).start()
         threading.Thread(target=self.start, name="mqtt_thread", daemon=True).start()
 
-# config.json: keep local configuration paramethers to start the program
-# resource_info_violation_detector.json: describes the service to register into the service catalog
-# resource_catalog_info.json: contains information about the service catalog
 
+# -------- MAIN --------
 if __name__ == "__main__":
     import os
 
-    # Dynamically determine the base directory
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    # Dynamically determine base path
+    base_path = os.path.dirname(os.path.abspath(__file__))
 
-    # Construct paths for configuration files
-    config_path = os.path.join(base_dir, "config.json")
-    resource_info_path = os.path.join(base_dir, "resource_info_violation_detector.json")
-    resource_catalog_info_path = os.path.join(base_dir, "resource_catalog_info.json")
-
-    # Load MQTT and client config
-    with open(config_path) as f:
+    # Load MQTT config
+    with open(os.path.join(base_path, "config.json")) as f:
         config = json.load(f)
 
+    # File paths
+    resource_info_path = os.path.join(base_path, "resource_info_violation_detector.json")
+    catalog_info_path = os.path.join(base_path, "resource_catalog_info.json")
+
+    # Initialize and run detector
     detector = ViolationDetector(
         client_id=config["client_id"],
         mqtt_broker=config["mqtt_broker"],
         mqtt_port=config["mqtt_port"],
         mqtt_topic=config["mqtt_topic"],
         resource_info_path=resource_info_path,
-        resource_catalog_info_path=resource_catalog_info_path
+        resource_catalog_info_path=catalog_info_path
     )
 
     detector.run()
 
-    # Keep the main thread alive
     try:
         while True:
             time.sleep(5)

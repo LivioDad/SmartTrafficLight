@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1744291914.4279466,
+    "lastUpdate": 1744292194.6526515,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -202,7 +202,7 @@
                     "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1744291914.4279377
+            "lastUpdate": 1744292194.6526477
         }
     ]
 }

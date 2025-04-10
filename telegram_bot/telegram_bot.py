@@ -4,30 +4,25 @@ import time
 import json
 import requests
 import threading
+import os
 from urllib.parse import urlencode
 
 class MyBot:
-    def __init__(self, token, resource_catalog_file, telegram_info_path, police_password):
-
-        # Retrieve broker info from service catalog
-        self.resource_catalog = json.load(open(resource_catalog_file))
-        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' \
-                         + self.resource_catalog["ip_port"] + '/broker'
-        r = requests.get(request_string)
-        rjson = json.loads(r.text)
-        self.broker = rjson["name"]
-        self.port = rjson["port"]
+    def __init__(self, token, service_catalog_info_path, resource_info_path, police_password):
         self.tokenBot = token
         self.police_password = police_password
-        self.telegram_info_path = telegram_info_path
+
+        # Load catalog info
+        with open(service_catalog_info_path) as f:
+            catalog_info = json.load(f)
+            self.catalog_url = f"http://{catalog_info['ip_address']}:{catalog_info['ip_port']}"
 
         # Load bot resource info
-        with open(telegram_info_path) as f:
+        with open(resource_info_path) as f:
             self.resource_info = json.load(f)
 
         # Discover DB Connector URL
-        #self.db_connector_url = self.get_db_connector_url()
-        self.db_connector_url = "http://127.0.0.1:8080"
+        self.db_connector_url = self.get_db_connector_url()
 
         # Authenticated users and search params
         self.authenticated_users = set()
@@ -37,19 +32,19 @@ class MyBot:
         self.bot = telepot.Bot(self.tokenBot)
         MessageLoop(self.bot, {'chat': self.on_chat_message}).run_as_thread()
 
-    def register(self):
-        """Periodically register the sensor in the resource catalog."""
-        request_string = f'http://{self.resource_catalog["ip_address"]}:{self.resource_catalog["ip_port"]}/registerResource'
-        data = json.load(open(self.telegram_info_path))
-        try:
-            r = requests.put(request_string, json.dumps(data, indent=4))
-            print(f'Response: {r.text}')
-        except Exception as e:
-            print(f'Error during registration: {e}')
+    def register_to_catalog(self):
+        while True:
+            try:
+                self.resource_info['lastUpdate'] = time.time()
+                response = requests.put(f"{self.catalog_url}/registerResource", json=self.resource_info)
+                print(f"Catalog registration: {response.status_code} - {response.text}")
+            except Exception as e:
+                print(f"Catalog registration error: {e}")
+            time.sleep(10)
 
     def get_db_connector_url(self):
         try:
-            response = requests.get(f"{self.resource_catalog}/resourceID?ID=db_connector_1")
+            response = requests.get(f"{self.catalog_url}/resourceID?ID=db_connector_1")
             if response.status_code == 200:
                 service = response.json()
                 for s in service.get("servicesDetails", []):
@@ -65,13 +60,21 @@ class MyBot:
         content_type, chat_type, chat_ID = telepot.glance(msg)
         message = msg['text'].strip()
 
+        # depending on whether the user is autenticated, show different options
         if message.lower() in ["/start", "/home"]:
-            self.bot.sendMessage(chat_ID, 
-                "Welcome! Available commands:\n"
-                "/environment - Retrieve environmental data\n"
-                "/violations - Access traffic violations (authentication required)\n"
-                "/logout - Log out\n"
-                "/search - Start an advanced traffic violation search")
+            if chat_ID in self.authenticated_users:
+                self.bot.sendMessage(chat_ID, 
+                    "Welcome! Available commands:\n"
+                    "/environment - Retrieve environmental data\n"
+                    "/violations - Access traffic violations\n"
+                    "/logout - Log out\n"
+                    "/search - Start an advanced traffic violation search")
+            else:
+                self.bot.sendMessage(chat_ID, 
+                    "Welcome! Available commands:\n"
+                    "/environment - Retrieve environmental data\n"
+                    "/violations - Access traffic violations (authentication required)\n"
+                    "/logout - Log out")
         elif message.lower() == "/environment":
             self.handle_environment_data(chat_ID)
         elif message.lower() == "/violations":
@@ -94,9 +97,9 @@ class MyBot:
         parts = message.split()
         if len(parts) == 2 and parts[1] == self.police_password:
             self.authenticated_users.add(chat_ID)
-            self.bot.sendMessage(chat_ID, "\u2705 Authentication successful! You can now use /search to query violations.")
+            self.bot.sendMessage(chat_ID, "✅ Authentication successful! You can now use /search to query violations.")
         else:
-            self.bot.sendMessage(chat_ID, "\u274C Incorrect password.")
+            self.bot.sendMessage(chat_ID, "❌ Incorrect password.")
 
     def handle_environment_data(self, chat_ID):
         try:
@@ -108,42 +111,47 @@ class MyBot:
                     latest = feeds[-1]
                     temperature = latest.get("field1", "N/A")
                     humidity = latest.get("field2", "N/A")
-                    self.bot.sendMessage(chat_ID, f"Environmental Data:\n- Temperature: {temperature}\u00b0C\n- Humidity: {humidity}%")
+                    self.bot.sendMessage(chat_ID, f"Environmental Data:\n- Temperature: {temperature}°C\n- Humidity: {humidity}%")
                 else:
                     self.bot.sendMessage(chat_ID, "No data available from the sensor.")
             else:
-                self.bot.sendMessage(chat_ID, "\u274C Failed to retrieve environmental data.")
+                self.bot.sendMessage(chat_ID, "❌ Failed to retrieve environmental data.")
         except Exception as e:
-            self.bot.sendMessage(chat_ID, f"\u274C Error: {e}")
+            self.bot.sendMessage(chat_ID, f"❌ Error: {e}")
 
     def logout_user(self, chat_ID):
         if chat_ID in self.authenticated_users:
             self.authenticated_users.remove(chat_ID)
-            self.bot.sendMessage(chat_ID, "\u2705 You have been logged out.")
+            self.bot.sendMessage(chat_ID, "✅ You have been logged out.")
         else:
-            self.bot.sendMessage(chat_ID, "\u26a0\ufe0f You are not logged in.")
+            self.bot.sendMessage(chat_ID, "⚠️ You are not logged in.")
 
     def start_search(self, chat_ID):
         self.search_params[chat_ID] = {}
-        self.bot.sendMessage(chat_ID, "\U0001F50E Do you want to search by license plate? (Type the plate number or leave empty for all)")
+        self.bot.sendMessage(chat_ID, "🔎 Do you want to search by license plate? (Type the plate number or leave empty for all)")
 
     def collect_search_params(self, chat_ID, message):
         params = self.search_params[chat_ID]
 
+        cleaned = message.strip()
+        user_input = None if cleaned == "-" else cleaned
+
         if "targa" not in params:
-            params["targa"] = message if message else None
-            self.bot.sendMessage(chat_ID, "\ud83d\udccd Do you want to filter by semaphore? (Enter the ID or leave empty).")
+            params["targa"] = user_input
+            self.bot.sendMessage(chat_ID, "📍 Enter semaphore ID (or type '-' to skip):")
         elif "semaforo_id" not in params:
-            params["semaforo_id"] = message if message else None
-            self.bot.sendMessage(chat_ID, "\ud83d\uddd3\ufe0f Enter the start date (format: YYYY-MM-DD) or leave empty.")
+            params["semaforo_id"] = user_input
+            self.bot.sendMessage(chat_ID, "🗓️ Enter start date (YYYY-MM-DD) or type '-' to skip:")
         elif "from_date" not in params:
-            params["from_date"] = message if message else None
-            self.bot.sendMessage(chat_ID, "\ud83d\uddd3\ufe0f Enter the end date (format: YYYY-MM-DD) or leave empty.")
+            params["from_date"] = user_input
+            self.bot.sendMessage(chat_ID, "🗓️ Enter end date (YYYY-MM-DD) or type '-' to skip:")
         elif "to_date" not in params:
-            params["to_date"] = message if message else None
+            params["to_date"] = user_input
             self.execute_search(chat_ID)
 
+
     def execute_search(self, chat_ID):
+        # extract paramethers specified by user
         params = self.search_params.pop(chat_ID)
 
         query_params = {}
@@ -155,8 +163,17 @@ class MyBot:
             query_params['from'] = params['from_date'] + "T00:00:00"
             query_params['to'] = params['to_date'] + "T23:59:59"
 
-        query_string = urlencode(query_params)
-        url = f"{self.db_connector_url}/infrazioni?{query_string}"
+        # dinamically discover the db adaptor url, if the telegram bot was started before adaptor
+        # then the url will be None
+        db_url = self.get_db_connector_url()
+        if not db_url:
+            self.bot.sendMessage(chat_ID, "❌ Database Connector not available.")
+            return
+
+        # build the url avoiding double slash
+        #url = db_url.rstrip("/") + "/infrazioni?" + urlencode(query_params)
+        url = db_url.rstrip("/") + "/?" + urlencode(query_params)
+
 
         try:
             response = requests.get(url)
@@ -164,33 +181,36 @@ class MyBot:
                 violations = response.json()
                 if violations:
                     reply = "\n".join([
-                        f"Plate: {x['targa']}, Date: {x['timestamp']}, Semaphore: {x['semaforo_id']}"
+                        f"Plate: {x['plate']}, Date: {x['date']}, Semaphore: {x['station']}"
                         for x in violations
                     ])
                 else:
-                    reply = "\u2705 No violations found."
+                    reply = "✅ No violations found."
             else:
-                reply = "\u274C Error retrieving data from the Database Connector."
+                reply = "❌ Error retrieving data from the Database Connector."
         except Exception as e:
-            reply = f"\u274C Error: {e}"
+            reply = f"❌ Error: {e}"
 
         self.bot.sendMessage(chat_ID, reply)
 
+
+# ---------- MAIN -------------
 if __name__ == "__main__":
     import os
-    # Automatically retrieve the path of JSON config files
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_dir = os.path.join(script_dir,"config.json")
-    parent_dir = os.path.dirname(script_dir)
-    resource_catalog_path = os.path.join(parent_dir, "resource_catalog", "resource_catalog_info.json")
-    telegram_info_path = os.path.join(script_dir, "telegram_bot_info.json")
 
-    config = json.load(open(config_dir))
+    base_path = os.path.dirname(os.path.abspath(__file__))
+
+    with open(os.path.join(base_path, 'config.json')) as f:
+        config = json.load(f)
+
     token = config['token']
     police_password = config['police_password']
 
-    bot = MyBot(token, resource_catalog_path, telegram_info_path, police_password)
-    threading.Thread(target=bot.register).start()
+    catalog_path = os.path.join(base_path, 'resource_catalog_info.json')
+    resource_path = os.path.join(base_path, 'resource_info_telegram_bot.json')
+
+    bot = MyBot(token, catalog_path, resource_path, police_password)
+    threading.Thread(target=bot.register_to_catalog, daemon=True).start()
 
     while True:
         time.sleep(3)
