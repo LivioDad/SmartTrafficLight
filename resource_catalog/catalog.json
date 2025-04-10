@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1744063434.4358375,
+    "lastUpdate": 1744291914.4279466,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -26,24 +26,6 @@
                 }
             ],
             "lastUpdate": 1743590762.0812645
-        },
-        {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1744063427.3006072
         },
         {
             "ID": "A_led_2",
@@ -203,6 +185,24 @@
                 }
             ],
             "lastUpdate": 1744063434.4358308
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1744291914.4279377
         }
     ]
 }

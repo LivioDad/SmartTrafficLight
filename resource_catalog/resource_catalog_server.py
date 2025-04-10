@@ -25,12 +25,8 @@ class TLCatalogManager(object):
             # Load the catalog.json
             self.catalog = json.load(open(self.catalog_file))
 
-            # Construct the path for resource_catalog_info.json
-            self.resource_cat_info_file = os.path.join(script_dir, "resource_catalog_info.json")
-            self.resource_cat_info_file = os.path.normpath(self.resource_cat_info_file)
-
             # Load the resource catalog info
-            self.resource_cat_info = json.load(open(self.resource_cat_info_file))
+            self.resource_cat_info = json.load(open(resource_catalog_info))
 
 
     def GET(self, *uri, **params):
@@ -97,11 +93,11 @@ class TLCatalogManager(object):
 
 
 if __name__ == '__main__':
-    res_cat_server = TLCatalogManager('resource_catalog_info.json')
-
     # automatically retrieve resource_catalog_info.json path
     script_dir = os.path.dirname(os.path.abspath(__file__))
     resource_info_path = os.path.join(script_dir, "resource_catalog_info.json")
+
+    res_cat_server = TLCatalogManager(resource_info_path)
 
     with open(resource_info_path) as f:
         resource_info = json.load(f)
