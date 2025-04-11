@@ -9,10 +9,10 @@ from urllib.parse import parse_qs
 
 DB_PATH = "infraction_database.db"
 
-@cherrypy.expose
 @cherrypy.tools.json_out()
 class DatabaseAdaptor:
-    
+    exposed = True
+
     def __init__(self, resource_info_path, catalog_info_path):
         self.init_db()
 
@@ -133,7 +133,7 @@ class DatabaseAdaptor:
 if __name__ == '__main__':
     cherrypy.quickstart(
         DatabaseAdaptor("database_adaptor_info.json", "resource_catalog_info.json"),
-        '/',
+        '/infraction',
         {
             '/': {
                 'request.dispatch': cherrypy.dispatch.MethodDispatcher(),

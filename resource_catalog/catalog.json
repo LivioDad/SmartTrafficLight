@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1744365329.8126092,
+    "lastUpdate": 1744365697.2257352,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -131,30 +131,6 @@
             "lastUpdate": 1744365246.231876
         },
         {
-            "ID": "violation_detector_1",
-            "Name": "Violation Detector",
-            "Type": "Processor",
-            "zone": "N/A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "config": [
-                {
-                    "client_id": "violation_detector",
-                    "mqtt_broker": "test.mosquitto.org",
-                    "mqtt_port": 1883,
-                    "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1744365324.3127296
-        },
-        {
             "ID": "A_led_1",
             "Name": "Traffic_light_LED1",
             "Type": "LED",
@@ -182,7 +158,47 @@
                 "WE_green": 7,
                 "WE_red": 8
             },
-            "lastUpdate": 1744365326.0406046
+            "lastUpdate": 1744365536.1608968
+        },
+        {
+            "ID": "db_connector_1",
+            "Name": "Database Adaptor",
+            "Type": "Storage",
+            "zone": "N/A",
+            "availableServices": [
+                "REST"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://localhost:8080/infraction"
+                }
+            ],
+            "lastUpdate": 1744365689.6106474
+        },
+        {
+            "ID": "violation_detector_1",
+            "Name": "Violation Detector",
+            "Type": "Processor",
+            "zone": "N/A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "config": [
+                {
+                    "client_id": "violation_detector",
+                    "mqtt_broker": "test.mosquitto.org",
+                    "mqtt_port": 1883,
+                    "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "lastUpdate": 1744365694.56332
         },
         {
             "ID": 888,
@@ -200,23 +216,7 @@
                     "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1744365327.0079746
-        },
-        {
-            "ID": "db_connector_1",
-            "Name": "Database Adaptor",
-            "Type": "Storage",
-            "zone": "N/A",
-            "availableServices": [
-                "REST"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "REST",
-                    "endpoint": "http://localhost:8080/infraction"
-                }
-            ],
-            "lastUpdate": 1744365329.8126009
+            "lastUpdate": 1744365697.225726
         }
     ]
 }
