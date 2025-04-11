@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1744364885.7982845,
+    "lastUpdate": 1744365329.8126092,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -84,26 +84,6 @@
             "lastUpdate": 1744063434.4358308
         },
         {
-            "ID": "A_I_1",
-            "Name": "HC_SR04",
-            "Type": "proximity",
-            "zone": "A",
-            "distance_threshold": 30,
-            "warning_cooldown": 3,
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1",
-                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
-                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1744363753.6567273
-        },
-        {
             "ID": "telegram_bot_1",
             "Name": "Telegram Bot",
             "Type": "Bot",
@@ -131,38 +111,24 @@
             "lastUpdate": 1744364814.6624117
         },
         {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
+            "ID": "A_I_1",
+            "Name": "HC_SR04",
+            "Type": "proximity",
             "zone": "A",
+            "distance_threshold": 30,
+            "warning_cooldown": 3,
             "availableServices": [
                 "MQTT"
             ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1744364876.7447097
-        },
-        {
-            "ID": "db_connector_1",
-            "Name": "Database Adaptor",
-            "Type": "Storage",
-            "zone": "N/A",
-            "availableServices": [
-                "REST"
-            ],
             "servicesDetails": [
                 {
-                    "serviceType": "REST",
-                    "endpoint": "http://localhost:8080/infraction"
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
+                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "lastUpdate": 1744364879.557179
+            "lastUpdate": 1744365246.231876
         },
         {
             "ID": "violation_detector_1",
@@ -186,7 +152,7 @@
                     "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "lastUpdate": 1744364884.0651567
+            "lastUpdate": 1744365324.3127296
         },
         {
             "ID": "A_led_1",
@@ -216,7 +182,41 @@
                 "WE_green": 7,
                 "WE_red": 8
             },
-            "lastUpdate": 1744364885.7982762
+            "lastUpdate": 1744365326.0406046
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1744365327.0079746
+        },
+        {
+            "ID": "db_connector_1",
+            "Name": "Database Adaptor",
+            "Type": "Storage",
+            "zone": "N/A",
+            "availableServices": [
+                "REST"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://localhost:8080/infraction"
+                }
+            ],
+            "lastUpdate": 1744365329.8126009
         }
     ]
 }

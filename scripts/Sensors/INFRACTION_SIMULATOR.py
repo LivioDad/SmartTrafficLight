@@ -41,6 +41,9 @@ class SIM_InfractionSensor:
         self.last_warning_time = 0
         self.converter = { "NS" : 1 , "WE" : 2}
 
+    def notify(self, topic, payload):
+        return
+
     def register(self):
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
         data = json.load(open(self.infractionSensor_info))
@@ -74,6 +77,7 @@ if __name__ == '__main__':
     infractionSensor_info_path = os.path.join(script_dir, "infractionSensor_info.json")
     infractionSensor_info_path = os.path.normpath(infractionSensor_info_path)
     Simulator = SIM_InfractionSensor(infractionSensor_info_path, resource_catalog_path)
+    Simulator.start()
 
     print("Distance sensor ready... waiting for detection")
 

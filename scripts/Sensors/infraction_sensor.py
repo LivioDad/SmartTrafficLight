@@ -70,7 +70,7 @@ class InfractionSensor:
                 "station": self.converter[self.direction]
             }
         self.client.myPublish(self.topic_infraction, msg)
-        print("Published:\n" + json.dumps(msg))
+        print("Published: " + json.dumps(msg) + "\non topic: " + self.topic_infraction)
 
     def start(self):
         self.client.start()
