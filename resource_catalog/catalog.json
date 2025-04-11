@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1744365697.2257352,
+    "lastUpdate": 1744366229.9585423,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -161,22 +161,6 @@
             "lastUpdate": 1744365536.1608968
         },
         {
-            "ID": "db_connector_1",
-            "Name": "Database Adaptor",
-            "Type": "Storage",
-            "zone": "N/A",
-            "availableServices": [
-                "REST"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "REST",
-                    "endpoint": "http://localhost:8080/infraction"
-                }
-            ],
-            "lastUpdate": 1744365689.6106474
-        },
-        {
             "ID": "violation_detector_1",
             "Name": "Violation Detector",
             "Type": "Processor",
@@ -198,7 +182,7 @@
                     "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "lastUpdate": 1744365694.56332
+            "lastUpdate": 1744366229.297301
         },
         {
             "ID": 888,
@@ -216,7 +200,23 @@
                     "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1744365697.225726
+            "lastUpdate": 1744366229.3793266
+        },
+        {
+            "ID": "db_connector_1",
+            "Name": "Database Adaptor",
+            "Type": "Storage",
+            "zone": "N/A",
+            "availableServices": [
+                "REST"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://localhost:8080/infraction"
+                }
+            ],
+            "lastUpdate": 1744366229.9585342
         }
     ]
 }
