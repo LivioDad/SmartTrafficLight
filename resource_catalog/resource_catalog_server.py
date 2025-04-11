@@ -49,12 +49,11 @@ class TLCatalogManager(object):
                     return output
 
                 if uri[0] == 'resourceID':
-                    # Retrieve the information of a device given its ID
-                    id = int(params['ID'])
+                    # accept alphanumeric IDs
+                    target_id = params['ID']
                     for item in self.catalog['resourcesList']:
-                        if id == int(item['ID']):
-                            output = json.dumps(item)
-                            return output
+                        if item['ID'] == target_id:
+                            return json.dumps(item)
                     return 'Resource/Device ID not found'
 
 

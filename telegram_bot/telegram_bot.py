@@ -207,7 +207,7 @@ if __name__ == "__main__":
     police_password = config['police_password']
 
     catalog_path = os.path.join(base_path, 'resource_catalog_info.json')
-    resource_path = os.path.join(base_path, 'resource_info_telegram_bot.json')
+    resource_path = os.path.join(base_path, 'telegram_bot_info.json')
 
     bot = MyBot(token, catalog_path, resource_path, police_password)
     threading.Thread(target=bot.register_to_catalog, daemon=True).start()

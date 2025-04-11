@@ -132,7 +132,7 @@ class DatabaseAdaptor:
 
 if __name__ == '__main__':
     cherrypy.quickstart(
-        DatabaseAdaptor("resource_info_database_adaptor.json", "resource_catalog_info.json"),
+        DatabaseAdaptor("database_adaptor_info.json", "resource_catalog_info.json"),
         '/',
         {
             '/': {
