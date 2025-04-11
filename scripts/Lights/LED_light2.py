@@ -295,7 +295,7 @@ if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir2 = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
     resource_catalog_path = os.path.join(parent_dir2, "SmartTrafficLight", "resource_catalog", "resource_catalog_info.json")
-    led_info_path = os.path.join(script_dir, "LED_semaforo1_info.json")
+    led_info_path = os.path.join(script_dir, "LED_light2_info.json")
 
     info = json.load(open(led_info_path))
 

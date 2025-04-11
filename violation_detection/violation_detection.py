@@ -39,17 +39,16 @@ class ViolationDetector:
         self.mqtt_client.stop()
 
     def notify(self, topic, payload):
-        print(f"📩 Message received on topic '{topic}'")
         """Callback when a message is received via MQTT"""
         try:
             payload = json.loads(payload.decode())
-            print(f"📩 Message received on topic '{topic}': {payload}")
+            print(f"Message received on topic '{topic}': {payload}")
 
             timestamp = payload.get("timestamp")
             station = payload.get("station")
 
             if not timestamp or station is None:
-                print("⚠️ Invalid message format: missing 'timestamp' or 'station'")
+                print("Invalid message format: missing 'timestamp' or 'station'")
                 return
 
             plate = self.generate_random_plate()
@@ -62,7 +61,7 @@ class ViolationDetector:
             self.send_violation_to_db(violation_data)
 
         except Exception as e:
-            print(f"❌ Error in notify(): {e}")
+            print(f"Error in notify(): {e}")
 
     def generate_random_plate(self):
         """Generate a fake license plate"""
@@ -84,26 +83,26 @@ class ViolationDetector:
                         print(f"📡 DB Adaptor discovered: {endpoint}")
                         return endpoint
             else:
-                print(f"❌ Failed to retrieve db adaptor info: HTTP {response.status_code}")
+                print(f"Failed to retrieve db adaptor info: HTTP {response.status_code}")
         except Exception as e:
-            print(f"❌ Error discovering DB adaptor: {e}")
+            print(f"Error discovering DB adaptor: {e}")
         return None
 
     def send_violation_to_db(self, data):
         """Send a new violation to the DB Adaptor"""
         db_url = self.get_db_adaptor_url()
         if not db_url:
-            print("⚠️ Cannot send violation: DB adaptor not available.")
+            print("Cannot send violation: DB adaptor not available.")
             return
 
         try:
             response = requests.post(db_url, json=data)
             if response.status_code == 201:
-                print(f"✅ Violation registered: {data}")
+                print(f"Violation registered: {data}")
             else:
-                print(f"❌ Failed to register violation: {response.status_code} - {response.text}")
+                print(f"Failed to register violation: {response.status_code} - {response.text}")
         except Exception as e:
-            print(f"❌ Error sending POST to DB adaptor: {e}")
+            print(f"Error sending POST to DB adaptor: {e}")
 
     def register_to_catalog(self):
         """Register periodically to the Service Catalog"""
@@ -111,9 +110,9 @@ class ViolationDetector:
             try:
                 self.resource_info["lastUpdate"] = time.time()
                 response = requests.put(self.catalog_register_url, json=self.resource_info)
-                print(f"📡 Registered to catalog: {response.status_code} - {response.text}")
+                print(f"Registered to catalog: {response.status_code} - {response.text}")
             except Exception as e:
-                print(f"❌ Catalog registration failed: {e}")
+                print(f"Catalog registration failed: {e}")
             time.sleep(10)
 
     def run(self):
@@ -157,5 +156,5 @@ if __name__ == "__main__":
         while True:
             time.sleep(5)
     except KeyboardInterrupt:
-        print("🛑 Stopping detector...")
+        print("Stopping detector...")
         detector.stop()

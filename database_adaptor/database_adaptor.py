@@ -34,11 +34,11 @@ class DatabaseAdaptor:
         while True:
             try:
                 self.resource_info["lastUpdate"] = time.time()
-                print(f"📤 Registering: {self.resource_info['ID']}")
+                print(f"Registering: {self.resource_info['ID']}")
                 response = requests.put(self.catalog_url, json=self.resource_info)
-                print(f"📡 Registered to catalog: {response.status_code} - {response.text}")
+                print(f"Registered to catalog: {response.status_code} - {response.text}")
             except Exception as e:
-                print(f"❌ Registration error: {e}")
+                print(f"Registration error: {e}")
             time.sleep(10)
 
     def init_db(self):
@@ -131,8 +131,11 @@ class DatabaseAdaptor:
 
 
 if __name__ == '__main__':
+    script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
+    resource_catalog_info_path = os.path.join(os.path.dirname(script_dir), 'resource_catalog', 'resource_catalog_info.json')
+
     cherrypy.quickstart(
-        DatabaseAdaptor("database_adaptor_info.json", "resource_catalog_info.json"),
+        DatabaseAdaptor("database_adaptor_info.json", resource_catalog_info_path),
         '/infraction',
         {
             '/': {

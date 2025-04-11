@@ -9,18 +9,18 @@ import os
 
 class LCDSubscriber:
     def __init__(self, led_manager_info, resource_catalog_info):
-        # Carica la configurazione
+        # Load the configuration
         self.resource_catalog_info = json.load(open(resource_catalog_info))
         led_info = json.load(open(led_manager_info))
 
-        # Richiesta informazioni dal resource catalog
+        # Request information from the resource catalog
         request_string = f'http://{self.resource_catalog_info["ip_address"]}:{self.resource_catalog_info["ip_port"]}/broker'
         r = requests.get(request_string)
         rjson = json.loads(r.text)
         self.broker = rjson["name"]
         self.port = rjson["port"]
 
-        # Estrai i topic dal LED manager info
+        # Extract topics from LED manager info
         for s in led_info["serviceDetails"]:
             if s["serviceType"] == 'MQTT':
                 self.topicS = s["topic_subscribe"]
@@ -32,27 +32,27 @@ class LCDSubscriber:
         self.clientID = led_info["Name"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
 
-        # Inizializza LCD
+        # Initialize LCD
         self.lcd = LCD(2, 0x27, True)
 
-        # Stato LCD
+        # LCD status
         self.line1_text = ""  # Warning
         self.line2_text = ""  # Countdown
 
-        # Controllo warning
+        # Warning control
         self.warning_active = False
-        self.warning_end_time = 0  # Tempo in cui il warning deve scomparire
+        self.warning_end_time = 0  # Time when the warning should disappear
 
         self.update_display("Waiting for", "sensor data...")
 
     def centered_message(self, text, line):
-        """Centra il testo su una riga dell'LCD"""
+        """Centers the text on a line of the LCD"""
         lcd_width = 16
         text = text.center(lcd_width)
         self.lcd.message(text, line)
 
     def update_display(self, line1=None, line2=None):
-        """Aggiorna solo le righe modificate dell'LCD"""
+        """Updates only the modified lines of the LCD"""
         if line1 is not None and line1 != self.line1_text:
             self.line1_text = line1
             self.centered_message(line1, 1)
@@ -63,7 +63,7 @@ class LCDSubscriber:
 
     def notify(self, topic, payload):
         # print(f"Received message on topic {topic}: {payload}")
-        """Callback quando arriva un messaggio MQTT."""
+        """Callback when an MQTT message arrives."""
         try:
             message_received = json.loads(payload)
 
@@ -71,11 +71,11 @@ class LCDSubscriber:
             if "e" in message_received and "n" in message_received["e"]:
                 warning_type = message_received["e"]["n"]
 
-            if warning_type == "vul_button":  # Utente vulnerabile
+            if warning_type == "vul_button":  # Vulnerable user
                 self.show_warning("VULNERABLE USER!")
                 return
 
-            if warning_type == "ped_sens":  # Pedone
+            if warning_type == "ped_sens":  # Pedestrian
                 self.show_warning("PEDESTRIAN CROSS!")
                 return
 
@@ -84,21 +84,21 @@ class LCDSubscriber:
                 self.update_display(line1="")  # Clear line 1 immediately
                 return  
 
-            # Countdown semaforo verde
+            # Green light countdown
             if "e" in message_received and message_received["e"]["n"] == "green_light":
                 if message_received["e"]["v"] == "NS":
                     remaining = message_received["e"]["c"]
                     self.update_display(line2=f"Red in {remaining-1}s")
                 return
 
-            # Countdown semaforo rosso
+            # Red light countdown
             if "e" in message_received and message_received["e"]["n"] == "red_light":
                 if message_received["e"]["v"] == "NS":
                     remaining = message_received["e"]["c"]
                     self.update_display(line2=f"Green in {remaining-1}s")
                 return
 
-            # Countdown emergenza dinamico
+            # Dynamic emergency countdown
             if "e" in message_received and message_received["e"]["n"] == "emergency_light" and message_received["e"]["i"] == self.intersection_number:
                 remaining = message_received["e"]["c"]
                 self.update_display(line1="EMERG VEHICLE!", line2=f"Clear in {remaining}s")
@@ -108,23 +108,24 @@ class LCDSubscriber:
             print(f"⚠ Error processing message: {e}")
 
     def show_warning(self, message):
-        """Mostra un messaggio di avviso sull'LCD."""
+        """Displays a warning message on the LCD."""
         self.update_display(line1=message)
 
     def start(self):
-        """Avvia il client MQTT e si sottoscrive ai topic."""
+        """Starts the MQTT client and subscribes to the topics."""
         self.client.start()
-        time.sleep(3)  # Tempo per la connessione
+        time.sleep(3)  # Time for the connection
         self.client.mySubscribe(self.topicS)
         self.client.mySubscribe(self.topicE)
         self.client.mySubscribe(self.topicStatus)
         self.client.mySubscribe(self.topicTransition)
         
     def stop(self):
-        """Ferma il client MQTT."""
+        """Stops the MQTT client."""
         self.client.unsubscribe()
         time.sleep(3)
         self.client.stop()
+
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -138,7 +139,7 @@ if __name__ == '__main__':
 
     try:
         while True:
-            time.sleep(1)  # Mantiene il programma in esecuzione
+            time.sleep(1)  # Keeps the program running
 
     except KeyboardInterrupt:
         print("\nStopping LCD MQTT Subscriber...")

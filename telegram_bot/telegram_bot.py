@@ -167,7 +167,7 @@ class MyBot:
         # then the url will be None
         db_url = self.get_db_connector_url()
         if not db_url:
-            self.bot.sendMessage(chat_ID, "❌ Database Connector not available.")
+            self.bot.sendMessage(chat_ID, "Database Connector not available.")
             return
 
         # build the url avoiding double slash
@@ -185,11 +185,11 @@ class MyBot:
                         for x in violations
                     ])
                 else:
-                    reply = "✅ No violations found."
+                    reply = "No violations found."
             else:
-                reply = "❌ Error retrieving data from the Database Connector."
+                reply = "Error retrieving data from the Database Connector."
         except Exception as e:
-            reply = f"❌ Error: {e}"
+            reply = f"Error: {e}"
 
         self.bot.sendMessage(chat_ID, reply)
 
