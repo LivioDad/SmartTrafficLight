@@ -1,6 +1,6 @@
 {
     "ID": "A_c_1",
-    "Name": "DHT11",
+    "Name": "vulnerablePedestrianSensor",
     "Type": "PIR",
     "zone": "A",
     "availableServices": [

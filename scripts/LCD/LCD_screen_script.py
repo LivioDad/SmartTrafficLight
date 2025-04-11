@@ -4,17 +4,19 @@ from LCD_config import LCD
 from MyMQTT import MyMQTT
 import requests
 import os
+import threading
 
 """ This script manages an LCD thought to be placed on traffic light A1 in direction NS"""
 
 class LCDSubscriber:
-    def __init__(self, led_manager_info, resource_catalog_info):
+    def __init__(self, lcd_manager_info, resource_catalog_info):
         # Load the configuration
-        self.resource_catalog_info = json.load(open(resource_catalog_info))
-        led_info = json.load(open(led_manager_info))
+        self.resource_catalog_info_info = json.load(open(resource_catalog_info))
+        led_info = json.load(open(lcd_manager_info))
 
+        self.lcd_manager_info = lcd_manager_info
         # Request information from the resource catalog
-        request_string = f'http://{self.resource_catalog_info["ip_address"]}:{self.resource_catalog_info["ip_port"]}/broker'
+        request_string = f'http://{self.resource_catalog_info_info["ip_address"]}:{self.resource_catalog_info_info["ip_port"]}/broker'
         r = requests.get(request_string)
         rjson = json.loads(r.text)
         self.broker = rjson["name"]
@@ -44,6 +46,15 @@ class LCDSubscriber:
         self.warning_end_time = 0  # Time when the warning should disappear
 
         self.update_display("Waiting for", "sensor data...")
+
+    def register(self):
+        request_string = 'http://' + self.resource_catalog_info["ip_address"] + ':' + self.resource_catalog_info["ip_port"] + '/registerResource'
+        data = json.load(open(self.lcd_manager_info))
+        try:
+            r = requests.put(request_string, json.dumps(data, indent=4))
+            print(f'Response: {r.text}')
+        except:
+            print("An error occurred during registration")
 
     def centered_message(self, text, line):
         """Centers the text on a line of the LCD"""
@@ -126,16 +137,29 @@ class LCDSubscriber:
         time.sleep(3)
         self.client.stop()
 
+    def background(self):
+        while True:
+            self.register()
+            time.sleep(10)
+
+    def foreground(self):
+        self.start()
+
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     parent_dir = os.path.dirname(script_dir)
     parent_dir1 = os.path.dirname(parent_dir)
-    led_manager_info_path = os.path.join(script_dir, 'LCD_info.json')
+    lcd_manager_info_path = os.path.join(script_dir, 'LCD_info.json')
     resource_catalog_info_path = os.path.join(parent_dir1, 'resource_catalog', 'resource_catalog_info.json')
 
-    lcd_subscriber = LCDSubscriber(led_manager_info_path, resource_catalog_info_path)
-    lcd_subscriber.start()
+    lcd_subscriber = LCDSubscriber(lcd_manager_info_path, resource_catalog_info_path)
+
+    b = threading.Thread(name='background', target=lcd_subscriber.background)
+    f = threading.Thread(name='foreground', target=lcd_subscriber.foreground)
+
+    b.start() #activate the backgorund periodically register
+    f.start() #activate the subscirpiton to MQTT topics
 
     try:
         while True:
