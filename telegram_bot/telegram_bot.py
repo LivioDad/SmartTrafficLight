@@ -193,23 +193,25 @@ class MyBot:
 
         self.bot.sendMessage(chat_ID, reply)
 
-
-# ---------- MAIN -------------
 if __name__ == "__main__":
     import os
 
     base_path = os.path.dirname(os.path.abspath(__file__))
+    info_path = os.path.join(base_path, "telegram_bot_info.json")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
 
-    with open(os.path.join(base_path, 'config.json')) as f:
-        config = json.load(f)
+    # Load config list from JSON
+    with open(info_path, "r") as f:
+        info_data = json.load(f)
+
+    config = info_data["config"][0]
 
     token = config['token']
     police_password = config['police_password']
 
-    catalog_path = os.path.join(base_path, 'resource_catalog_info.json')
-    resource_path = os.path.join(base_path, 'telegram_bot_info.json')
-
-    bot = MyBot(token, catalog_path, resource_path, police_password)
+    bot = MyBot(token, resource_catalog_path, info_path, police_password)
     threading.Thread(target=bot.register_to_catalog, daemon=True).start()
 
     while True:

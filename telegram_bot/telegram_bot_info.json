@@ -13,6 +13,12 @@
         "serviceType": "Telegram",
         "bot_name": "TrafficBot"
       }
+    ],
+    "config":[
+      { 
+      "token":"7755722393:AAHRmfprYfSYOCOoxmzcm5HpfqQkGl2fDGI", 
+      "police_password":"its_the_sound_of_da_police"
+      }
     ]
   }
   

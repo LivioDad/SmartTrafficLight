@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1744293134.0739853,
+    "lastUpdate": 1744364885.7982845,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -35,36 +35,6 @@
                 "WE_red": 12
             },
             "lastUpdate": 1744063428.3271296
-        },
-        {
-            "ID": "A_led_1",
-            "Name": "Traffic_light_LED1",
-            "Type": "LED",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Led/A/#",
-                    "topic_zone": "SmartTrafficLight/Led/A",
-                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
-                    "topic_trans": "SmartTrafficLight/transitions/A_led_1",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "standard_duty_cycle": 3,
-            "emergency_duty_cycle": 15,
-            "pedestrian_duty_cycle": 5,
-            "vulnerable_road_users_duty_cycle": 7,
-            "pins": {
-                "NS_green": 6,
-                "NS_red": 5,
-                "WE_green": 7,
-                "WE_red": 8
-            },
-            "lastUpdate": 1744063429.9799495
         },
         {
             "ID": "A_p_1",
@@ -114,24 +84,6 @@
             "lastUpdate": 1744063434.4358308
         },
         {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1744292384.790137
-        },
-        {
             "ID": "A_I_1",
             "Name": "HC_SR04",
             "Type": "proximity",
@@ -149,23 +101,7 @@
                     "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "lastUpdate": 1744292888.627966
-        },
-        {
-            "ID": "violation_detector_1",
-            "Name": "Violation Detector",
-            "Type": "Processor",
-            "zone": "N/A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1744293127.9730814
+            "lastUpdate": 1744363753.6567273
         },
         {
             "ID": "telegram_bot_1",
@@ -186,7 +122,31 @@
                     "bot_name": "TrafficBot"
                 }
             ],
-            "lastUpdate": 1744293130.7848632
+            "config": [
+                {
+                    "token": "7755722393:AAHRmfprYfSYOCOoxmzcm5HpfqQkGl2fDGI",
+                    "police_password": "its_the_sound_of_da_police"
+                }
+            ],
+            "lastUpdate": 1744364814.6624117
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1744364876.7447097
         },
         {
             "ID": "db_connector_1",
@@ -202,7 +162,61 @@
                     "endpoint": "http://localhost:8080/infraction"
                 }
             ],
-            "lastUpdate": 1744293134.0739737
+            "lastUpdate": 1744364879.557179
+        },
+        {
+            "ID": "violation_detector_1",
+            "Name": "Violation Detector",
+            "Type": "Processor",
+            "zone": "N/A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "config": [
+                {
+                    "client_id": "violation_detector",
+                    "mqtt_broker": "test.mosquitto.org",
+                    "mqtt_port": 1883,
+                    "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "lastUpdate": 1744364884.0651567
+        },
+        {
+            "ID": "A_led_1",
+            "Name": "Traffic_light_LED1",
+            "Type": "LED",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Led/A/#",
+                    "topic_zone": "SmartTrafficLight/Led/A",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
+                    "topic_trans": "SmartTrafficLight/transitions/A_led_1",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "standard_duty_cycle": 3,
+            "emergency_duty_cycle": 15,
+            "pedestrian_duty_cycle": 5,
+            "vulnerable_road_users_duty_cycle": 7,
+            "pins": {
+                "NS_green": 6,
+                "NS_red": 5,
+                "WE_green": 7,
+                "WE_red": 8
+            },
+            "lastUpdate": 1744364885.7982762
         }
     ]
 }

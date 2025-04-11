@@ -56,7 +56,7 @@ class DatabaseAdaptor:
             conn.commit()
 
     def get_connection(self):
-        return sqlite3.connect(DB_PATH)
+        return sqlite3.connect(DB_PATH, check_same_thread=False)
 
     def build_query(self, plate=None, station=None, from_date=None, to_date=None):
         query = "SELECT * FROM violations WHERE 1=1"

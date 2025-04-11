@@ -1,6 +1,0 @@
-{
-  "client_id": "violation_detector",
-  "mqtt_broker": "test.mosquitto.org",
-  "mqtt_port": 1883,
-  "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
-}

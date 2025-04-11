@@ -32,13 +32,14 @@ class ViolationDetector:
     def start(self):
         """Start MQTT client and subscribe to topic"""
         self.mqtt_client.start()
-        time.sleep(2)
+        time.sleep(1)
         self.mqtt_client.mySubscribe(self.mqtt_topic)
 
     def stop(self):
         self.mqtt_client.stop()
 
     def notify(self, topic, payload):
+        print(f"📩 Message received on topic '{topic}'")
         """Callback when a message is received via MQTT"""
         try:
             payload = json.loads(payload.decode())
@@ -120,21 +121,25 @@ class ViolationDetector:
         threading.Thread(target=self.register_to_catalog, name="register_thread", daemon=True).start()
         threading.Thread(target=self.start, name="mqtt_thread", daemon=True).start()
 
-
-# -------- MAIN --------
 if __name__ == "__main__":
     import os
 
     # Dynamically determine base path
     base_path = os.path.dirname(os.path.abspath(__file__))
 
-    # Load MQTT config
-    with open(os.path.join(base_path, "config.json")) as f:
-        config = json.load(f)
 
     # File paths
-    resource_info_path = os.path.join(base_path, "resource_info_violation_detector.json")
-    catalog_info_path = os.path.join(base_path, "resource_catalog_info.json")
+    
+    info_path = os.path.join(base_path, "violation_detection_info.json")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
+
+    # Load config list from JSON
+    with open(info_path, "r") as f:
+        info_data = json.load(f)
+
+    config = info_data["config"][0]
 
     # Initialize and run detector
     detector = ViolationDetector(
@@ -142,8 +147,8 @@ if __name__ == "__main__":
         mqtt_broker=config["mqtt_broker"],
         mqtt_port=config["mqtt_port"],
         mqtt_topic=config["mqtt_topic"],
-        resource_info_path=resource_info_path,
-        resource_catalog_info_path=catalog_info_path
+        resource_info_path=info_path,
+        resource_catalog_info_path=resource_catalog_path
     )
 
     detector.run()
