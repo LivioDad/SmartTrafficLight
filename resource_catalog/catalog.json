@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1744368116.343137,
+    "lastUpdate": 1744369159.755702,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -7,70 +7,40 @@
     },
     "resourcesList": [
         {
-            "ID": "ES_11",
-            "Name": "EmergecySystem",
-            "Zone": "N/A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1744063434.4358308
-        },
-        {
-            "ID": "telegram_bot_1",
-            "Name": "Telegram Bot",
-            "Type": "Bot",
+            "ID": "db_connector_1",
+            "Name": "Database Adaptor",
+            "Type": "Storage",
             "zone": "N/A",
             "availableServices": [
-                "REST",
-                "Telegram"
+                "REST"
             ],
             "servicesDetails": [
                 {
                     "serviceType": "REST",
-                    "endpoint": "http://localhost:8082"
-                },
-                {
-                    "serviceType": "Telegram",
-                    "bot_name": "TrafficBot"
+                    "endpoint": "http://192.168.1.36:8080/infraction"
                 }
             ],
-            "config": [
-                {
-                    "token": "7755722393:AAHRmfprYfSYOCOoxmzcm5HpfqQkGl2fDGI",
-                    "police_password": "its_the_sound_of_da_police"
-                }
-            ],
-            "lastUpdate": 1744366825.245216
+            "lastUpdate": 1744368750.6190188
         },
         {
-            "ID": "violation_detector_1",
-            "Name": "Violation Detector",
-            "Type": "Processor",
-            "zone": "N/A",
+            "ID": "A_I_1",
+            "Name": "HC_SR04",
+            "Type": "proximity",
+            "zone": "A",
+            "distance_threshold": 30,
+            "warning_cooldown": 3,
             "availableServices": [
                 "MQTT"
             ],
             "servicesDetails": [
                 {
                     "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Led/A/redInfraction"
+                    "topic": "SmartTrafficLight/Sensor/A/1",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
+                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "config": [
-                {
-                    "client_id": "violation_detector",
-                    "mqtt_broker": "test.mosquitto.org",
-                    "mqtt_port": 1883,
-                    "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1744368089.112913
+            "lastUpdate": 1744369090.4605515
         },
         {
             "ID": "A_led_2",
@@ -100,77 +70,7 @@
                 "WE_green": 16,
                 "WE_red": 12
             },
-            "lastUpdate": 1744368106.9859123
-        },
-        {
-            "ID": "A_c_1",
-            "Name": "DHT11",
-            "Type": "PIR",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1"
-                }
-            ],
-            "lastUpdate": 1744368112.844808
-        },
-        {
-            "ID": "A_I_1",
-            "Name": "HC_SR04",
-            "Type": "proximity",
-            "zone": "A",
-            "distance_threshold": 30,
-            "warning_cooldown": 3,
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1",
-                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
-                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1744368113.18229
-        },
-        {
-            "ID": "db_connector_1",
-            "Name": "Database Adaptor",
-            "Type": "Storage",
-            "zone": "N/A",
-            "availableServices": [
-                "REST"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "REST",
-                    "endpoint": "http://localhost:8080/infraction"
-                }
-            ],
-            "lastUpdate": 1744368113.5397193
-        },
-        {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1744368113.6601226
+            "lastUpdate": 1744369091.725911
         },
         {
             "ID": "A_led_1",
@@ -200,7 +100,23 @@
                 "WE_green": 7,
                 "WE_red": 8
             },
-            "lastUpdate": 1744368113.7344358
+            "lastUpdate": 1744369093.051222
+        },
+        {
+            "ID": "A_c_1",
+            "Name": "DHT11",
+            "Type": "PIR",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1"
+                }
+            ],
+            "lastUpdate": 1744369095.2226298
         },
         {
             "ID": "A_p_1",
@@ -216,7 +132,91 @@
                     "topic": "SmartTrafficLight/Sensor/A/1"
                 }
             ],
-            "lastUpdate": 1744368116.3431315
+            "lastUpdate": 1744369095.8609014
+        },
+        {
+            "ID": "telegram_bot_1",
+            "Name": "Telegram Bot",
+            "Type": "Bot",
+            "zone": "N/A",
+            "availableServices": [
+                "REST",
+                "Telegram"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://localhost:8082"
+                },
+                {
+                    "serviceType": "Telegram",
+                    "bot_name": "TrafficBot"
+                }
+            ],
+            "config": [
+                {
+                    "token": "7755722393:AAHRmfprYfSYOCOoxmzcm5HpfqQkGl2fDGI",
+                    "police_password": "its_the_sound_of_da_police"
+                }
+            ],
+            "lastUpdate": 1744369156.0346606
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1744369157.5237634
+        },
+        {
+            "ID": "ES_11",
+            "Name": "EmergecySystem",
+            "Zone": "N/A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1744369158.8201926
+        },
+        {
+            "ID": "violation_detector_1",
+            "Name": "Violation Detector",
+            "Type": "Processor",
+            "zone": "N/A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "config": [
+                {
+                    "client_id": "violation_detector",
+                    "mqtt_broker": "test.mosquitto.org",
+                    "mqtt_port": 1883,
+                    "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "lastUpdate": 1744369159.7556984
         }
     ]
 }
