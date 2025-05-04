@@ -1,88 +1,125 @@
 import time
 import adafruit_dht
 import board  # Importa la libreria board per i pin GPIO
-from MyMQTT import MyMQTT
+from MyMQTT import *
 import json
+import os
+import threading
+import requests
 
-# MQTT Configuration
-BROKER = "mqtt.eclipseprojects.io"
-PORT = 1883
-CLIENT_ID = "DHT11_Sensor_01"
-TEMP_TOPIC = "/sensor/temperature"
-HUMIDITY_TOPIC = "/sensor/humidity"
 
-# Set GPIO pin for the DHT11 sensor (using board.D24)
-DHT_PIN = board.D24  # GPIO pin where the data pin of the DHT11 is connected
+class TempSensor:
+    def __init__(self, DHT_info, resource_catalog_file):
+        # Retrieve broker info from service catalog
+        self.resource_catalog = json.load(open(resource_catalog_file))
+        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' \
+                         + self.resource_catalog["ip_port"] + '/broker'
+        r = requests.get(request_string)
+        rjson = json.loads(r.text)
+        self.broker = rjson["name"]
+        self.port = rjson["port"]
 
-# Initialize the MQTT publisher
-class DHTPublisher:
-    def __init__(self, clientID, broker, port):
-        self.clientID = clientID
-        self.broker = broker
-        self.port = port
-        self.MQTTClient = MyMQTT(clientID, broker, port, None)
+        # Details about sensor
+        self.DHT_info = DHT_info
+        info = json.load(open(self.DHT_info))
+        self.topic = info["servicesDetails"][0]["topic"]
+        self.clientID = info["ID"]
+        self.client = MyMQTT(self.clientID, self.broker, self.port, None)
+
+        # Set GPIO pin for the DHT11 sensor (using board.D24)
+        DHT_pin = board.D24  # GPIO pin where the data pin of the DHT11 is connected
+        # Initialize DHT11 sensor using board.D24 for the GPIO pin
+        self.sensor = adafruit_dht.DHT11(DHT_pin)
+    
+    def register(self):
+        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
+        data = json.load(open(self.DHT_info))
+        try:
+            r = requests.put(request_string, json.dumps(data, indent=4))
+            print(f'Response: {r.text}')
+        except:
+            print("An error occurred during registration")
+
     
     def start(self):
-        self.MQTTClient.start()
+        self.client.start()
 
     def stop(self):
-        self.MQTTClient.stop()
+        self.client.stop()
 
-    def publish_temperature(self, temperature):
+    def background(self):
+        while True:
+            self.register()
+            time.sleep(10)
+
+    def foreground(self):
+        self.start()
+
+    def publish(self, temperature , humidity):
         timestamp = time.time()
         message = {
-            "bn": f"{self.clientID}/temperature",
+            "bn": self.clientID,
+            "bt": timestamp,
             "e": [{
                 "n": "temperature",
                 "u": "C",
-                "t": timestamp,
                 "v": temperature
-            }]
-        }
-        self.MQTTClient.myPublish(TEMP_TOPIC, message)
-        print(f"Published to {TEMP_TOPIC}: {json.dumps(message)}")
-
-    def publish_humidity(self, humidity):
-        timestamp = time.time()
-        message = {
-            "bn": f"{self.clientID}/humidity",
-            "e": [{
+            },{
                 "n": "humidity",
                 "u": "%",
-                "t": timestamp,
                 "v": humidity
-            }]
+            }
+            ]
         }
-        self.MQTTClient.myPublish(HUMIDITY_TOPIC, message)
-        print(f"Published to {HUMIDITY_TOPIC}: {json.dumps(message)}")
+        self.client.myPublish(self.topic, message)
+        print(f"Published to {self.topic}: {json.dumps(message)}")
 
-# Start the MQTT client
-publisher = DHTPublisher(CLIENT_ID, BROKER, PORT)
-publisher.start()
 
-# Initialize DHT11 sensor using board.D24 for the GPIO pin
-sensor = adafruit_dht.DHT11(DHT_PIN)
+    def read_dht11_data(self):
+        try:
+            # Attempt to read data from the DHT11 sensor
+            temperature = self.sensor.temperature
+            humidity = self.sensor.humidity
+            if temperature is not None and humidity is not None:
+                self.publish(temperature , humidity)
+            else:
+                print("Failed to retrieve data from the sensor")
+        except RuntimeError as e:
+            print(f"DHT11 read error: {e}")
 
-def read_dht11_data():
+if __name__ == '__main__':
+    # Lines to make automatically retrieve the path of resource_catalog_info.json
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
+    tempSensor_info_path = os.path.join(script_dir, "DHT11.json")
+    tempSensor_info_path = os.path.normpath(tempSensor_info_path)
+    sens = TempSensor(tempSensor_info_path, resource_catalog_path)
+    print("Temperature and Humidity sensor ready... waiting for detection")
+
+    b = threading.Thread(name='background', target=sens.background)
+    f = threading.Thread(name='foreground', target=sens.foreground)
+
+    b.start()
+    f.start()
+
     try:
-        # Attempt to read data from the DHT11 sensor
-        temperature = sensor.temperature
-        humidity = sensor.humidity
-        if temperature is not None and humidity is not None:
-            publisher.publish_temperature(temperature)
-            publisher.publish_humidity(humidity)
-        else:
-            print("Failed to retrieve data from the sensor")
-    except RuntimeError as e:
-        print(f"DHT11 read error: {e}")
+        while True:
+            sens.read_dht11_data() # Read data from the DHT11 sensor
+            time.sleep(5)  # Wait for 5 seconds before the next reading
+    except KeyboardInterrupt:
+        print("Program interrupted.")
+    finally:
+        sens.stop()
 
-try:
-    while True:
-        read_dht11_data()  # Read data from the DHT11 sensor
-        time.sleep(5)  # Wait for 5 seconds before the next reading
 
-except KeyboardInterrupt:
-    print("Program interrupted.")
-finally:
-    publisher.stop()
-    sensor.exit()
+# try:
+#     while True:
+#         read_dht11_data()  
+#         time.sleep(5)  # Wait for 5 seconds before the next reading
+
+# except KeyboardInterrupt:
+#     print("Program interrupted.")
+# finally:
+#     publisher.stop()
+#     sensor.exit()

@@ -1,0 +1,15 @@
+{
+    "ID": "predictA",
+    "Name": "roadIcePredictor",
+    "zone": "A",
+    "availableServices": [
+      "MQTT"
+    ],
+    "servicesDetails": [
+      {
+        "serviceType": "MQTT",
+        "topicS": "SmartTrafficLight/Sensor/A/weather",
+        "topicP": "SmartTrafficLight/LCD/A/roadIcePredictor"
+      }
+    ]
+}
