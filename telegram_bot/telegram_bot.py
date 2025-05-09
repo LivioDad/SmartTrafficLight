@@ -103,17 +103,26 @@ class MyBot:
 
     def handle_environment_data(self, chat_ID):
         try:
-            response = requests.get("https://api.thingspeak.com/channels/2875299/fields/1.json?api_key=BTP4K708D2767EMW")
+            response = requests.get("https://api.thingspeak.com/channels/2875299/feeds.json?api_key=BTP4K708D2767EMW&results=20")
             if response.status_code == 200:
                 data = response.json()
                 feeds = data.get("feeds", [])
-                if feeds:
-                    latest = feeds[-1]
-                    temperature = latest.get("field1", "N/A")
-                    humidity = latest.get("field2", "N/A")
-                    self.bot.sendMessage(chat_ID, f"Environmental Data:\n- Temperature: {temperature}°C\n- Humidity: {humidity}%")
+                temperature = humidity = None
+
+                for entry in reversed(feeds):
+                    if temperature is None and entry.get("field1"):
+                        temperature = entry["field1"]
+                    if humidity is None and entry.get("field2"):
+                        humidity = entry["field2"]
+                    if temperature and humidity:
+                        break
+
+                if temperature or humidity:
+                    temp_str = f"- Temperature: {temperature}°C" if temperature else "- Temperature: N/A"
+                    hum_str = f"- Humidity: {humidity}%" if humidity else "- Humidity: N/A"
+                    self.bot.sendMessage(chat_ID, f"Environmental Data:\n{temp_str}\n{hum_str}")
                 else:
-                    self.bot.sendMessage(chat_ID, "No data available from the sensor.")
+                    self.bot.sendMessage(chat_ID, "No recent valid environmental data available.")
             else:
                 self.bot.sendMessage(chat_ID, "❌ Failed to retrieve environmental data.")
         except Exception as e:
@@ -128,7 +137,7 @@ class MyBot:
 
     def start_search(self, chat_ID):
         self.search_params[chat_ID] = {}
-        self.bot.sendMessage(chat_ID, "🔎 Do you want to search by license plate? (Type the plate number or leave empty for all)")
+        self.bot.sendMessage(chat_ID, "🔎 Do you want to search by license plate? (Type the plate number or '-' for all)")
 
     def collect_search_params(self, chat_ID, message):
         params = self.search_params[chat_ID]
