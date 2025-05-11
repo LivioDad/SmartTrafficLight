@@ -64,15 +64,26 @@ class TempSensor:
                 "n": "temperature",
                 "u": "C",
                 "v": temperature
-            },{
+            }]
+        }
+        self.MQTTClient.myPublish(TEMP_TOPIC, message)
+        #print(f"Published to {TEMP_TOPIC}: {json.dumps(message)}")
+        print(f"Temperature: {temperature}°C")
+
+    def publish_humidity(self, humidity):
+        timestamp = time.time()
+        message = {
+            "bn": f"{self.clientID}/humidity",
+            "e": [{
                 "n": "humidity",
                 "u": "%",
                 "v": humidity
             }
             ]
         }
-        self.client.myPublish(self.topic, message)
-        print(f"Published to {self.topic}: {json.dumps(message)}")
+        self.MQTTClient.myPublish(HUMIDITY_TOPIC, message)
+        # print(f"Published to {HUMIDITY_TOPIC}: {json.dumps(message)}")
+        print(f"Humidity: {humidity}%")
 
 
     def read_dht11_data(self):
