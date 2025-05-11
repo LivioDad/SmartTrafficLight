@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1746984228.4717944,
+    "lastUpdate": 1746984671.153395,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -73,6 +73,26 @@
             "lastUpdate": 1744369159.7556984
         },
         {
+            "ID": "A_I_1",
+            "Name": "HC_SR04",
+            "Type": "proximity",
+            "zone": "A",
+            "distance_threshold": 30,
+            "warning_cooldown": 3,
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
+                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "lastUpdate": 1746983188.5173802
+        },
+        {
             "ID": "A_led_2",
             "Name": "Traffic_light_LED2",
             "Type": "LED",
@@ -100,7 +120,94 @@
                 "WE_green": 16,
                 "WE_red": 12
             },
-            "lastUpdate": 1746983152.7629387
+            "lastUpdate": 1746984663.1204145
+        },
+        {
+            "ID": "DHT11_A_1",
+            "Name": "temperatureHumiditySensor",
+            "Type": "DHT",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "/sensor"
+                }
+            ],
+            "lastUpdate": 1746984665.0991364
+        },
+        {
+            "ID": 999,
+            "Name": "LCD_A_1",
+            "Type": "LCDManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
+                    "topic_transition": "SmartTrafficLight/transitions/A_led_1",
+                    "topic_roadice": "SmartTrafficLight/LCD/A/roadIcePredictor"
+                }
+            ],
+            "lastUpdate": 1746984666.3020744
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1746984667.0891225
+        },
+        {
+            "ID": "A_c_1",
+            "Name": "vulnerablePedestrianSensor",
+            "Type": "PIR",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1"
+                }
+            ],
+            "lastUpdate": 1746984668.1124265
+        },
+        {
+            "ID": "predictA",
+            "Name": "roadIcePredictor",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topicS": "SmartTrafficLight/Sensor/A/weather",
+                    "topicP": "SmartTrafficLight/LCD/A/roadIcePredictor"
+                }
+            ],
+            "lastUpdate": 1746984669.8853753
         },
         {
             "ID": "A_led_1",
@@ -130,98 +237,7 @@
                 "WE_green": 7,
                 "WE_red": 8
             },
-            "lastUpdate": 1746983157.3389742
-        },
-        {
-            "ID": "A_I_1",
-            "Name": "HC_SR04",
-            "Type": "proximity",
-            "zone": "A",
-            "distance_threshold": 30,
-            "warning_cooldown": 3,
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1",
-                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
-                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1746983188.5173802
-        },
-        {
-            "ID": "DHT11_A_1",
-            "Name": "temperatureHumiditySensor",
-            "Type": "DHT",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "/sensor"
-                }
-            ],
-            "lastUpdate": 1746983232.2865312
-        },
-        {
-            "ID": "A_c_1",
-            "Name": "vulnerablePedestrianSensor",
-            "Type": "PIR",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1"
-                }
-            ],
-            "lastUpdate": 1746983338.8739805
-        },
-        {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1746984220.8074956
-        },
-        {
-            "ID": 999,
-            "Name": "LCD_A_1",
-            "Type": "LCDManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency",
-                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
-                    "topic_transition": "SmartTrafficLight/transitions/A_led_1",
-                    "topic_roadice": "SmartTrafficLight/LCD/A/roadIcePredictor"
-                }
-            ],
-            "lastUpdate": 1746984220.8282707
+            "lastUpdate": 1746984670.148015
         },
         {
             "ID": "A_p_1",
@@ -237,7 +253,7 @@
                     "topic": "SmartTrafficLight/Sensor/A/1"
                 }
             ],
-            "lastUpdate": 1746984228.081555
+            "lastUpdate": 1746984671.1198585
         },
         {
             "ID": "db_connector_1",
@@ -253,23 +269,7 @@
                     "endpoint": "http://192.168.1.36:8080/infraction"
                 }
             ],
-            "lastUpdate": 1746984228.2016394
-        },
-        {
-            "ID": "predictA",
-            "Name": "roadIcePredictor",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topicS": "SmartTrafficLight/Sensor/A/weather",
-                    "topicP": "SmartTrafficLight/LCD/A/roadIcePredictor"
-                }
-            ],
-            "lastUpdate": 1746984228.471787
+            "lastUpdate": 1746984671.1533892
         }
     ]
 }
