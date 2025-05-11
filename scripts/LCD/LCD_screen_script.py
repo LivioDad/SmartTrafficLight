@@ -31,6 +31,7 @@ class LCDSubscriber:
                 self.topicE = s["topic_emergency"]
                 self.topicStatus = s["topic_status"]
                 self.topicTransition = s["topic_transition"]
+                self.topicRoadIce = s["topic_roadice"]
         self.intersection_number = led_info["Name"].split('_')[2]
         
         self.clientID = led_info["Name"]
@@ -50,7 +51,7 @@ class LCDSubscriber:
         self.update_display("Waiting for", "sensor data...")
 
     def register(self):
-        request_string = 'http://' + self.resource_catalog_info["ip_address"] + ':' + self.resource_catalog_info["ip_port"] + '/registerResource'
+        request_string = 'http://' + self.resource_catalog_info_info["ip_address"] + ':' + self.resource_catalog_info_info["ip_port"] + '/registerResource'
         data = json.load(open(self.lcd_manager_info))
         try:
             r = requests.put(request_string, json.dumps(data, indent=4))
@@ -72,15 +73,28 @@ class LCDSubscriber:
         if line2 is not None and line2 != self.line2_text:
             self.line2_text = line2
             self.centered_message(line2, 2)
-
+            
     def notify(self, topic, payload):
-        """ Callback per la ricezione dei messaggi MQTT """
+        """ Callback for incoming MQTT messages """
         try:
             message_received = json.loads(payload)
-            if "e" in message_received and "n" in message_received["e"]:
-                event = message_received["e"]["n"]
 
-                # Gestione dei warning
+            # Handle ice risk messages first
+            if topic == self.topicRoadIce:
+                try:
+                    for e in message_received["e"]:
+                        if e["n"] == "ice_risk" and e["v"] > 0.5:
+                            self.stop_countdown()
+                            self.show_warning("ICE RISK!")
+                            return
+                except Exception as ex:
+                    print(f"Error parsing ice_risk message: {ex}")
+                return  # Exit after processing
+
+            # Legacy pedestrian/emergency handlers
+            if "e" in message_received and isinstance(message_received["e"], dict):
+                event = message_received["e"].get("n")
+
                 if event == "vul_button":
                     self.stop_countdown()
                     self.show_warning("VULNERABLE USER!")
@@ -89,26 +103,19 @@ class LCDSubscriber:
                     self.stop_countdown()
                     self.show_warning("PEDESTRIAN CROSS!")
                     return
-
-                # Gestione della transizione standard (cancella eventuali warning/countdown)
                 if event == "standard_transition":
                     self.stop_countdown()
                     self.update_display(line1="", line2="")
                     return
 
-                # Gestione del countdown per i cicli standard
                 if event in ["green_light", "red_light"]:
                     if message_received["e"]["v"] == "NS":
                         duration = message_received["e"]["c"]
-                        if event == "green_light":
-                            countdown_template = "Red in {}s"
-                        elif event == "red_light":
-                            countdown_template = "Green in {}s"
+                        template = "Red in {}s" if event == "green_light" else "Green in {}s"
                         self.stop_countdown()
-                        self.start_countdown(countdown_template, duration)
+                        self.start_countdown(template, duration)
                     return
 
-                # Gestione del countdown in modalità emergenza
                 if event == "emergency_light":
                     if message_received["e"]["i"] == self.intersection_number:
                         duration = message_received["e"]["c"]
@@ -116,8 +123,9 @@ class LCDSubscriber:
                         self.update_display(line1="EMERG VEHICLE!")
                         self.start_countdown("Clear in {} sec", duration)
                     return
+
         except Exception as e:
-            print(f"⚠ Error processing message: {e}")
+            print(f"Error processing message: {e}")
 
     def show_warning(self, message):
         """ Visualizza un messaggio di warning sull'LCD """
@@ -154,7 +162,8 @@ class LCDSubscriber:
         self.client.mySubscribe(self.topicE)
         self.client.mySubscribe(self.topicStatus)
         self.client.mySubscribe(self.topicTransition)
-        
+        self.client.mySubscribe(self.topicRoadIce)
+
     def stop(self):
         """ Ferma il client MQTT """
         self.client.unsubscribe()
@@ -168,7 +177,6 @@ class LCDSubscriber:
 
     def foreground(self):
         self.start()
-
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))

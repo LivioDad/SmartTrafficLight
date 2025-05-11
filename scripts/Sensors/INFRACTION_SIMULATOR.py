@@ -85,5 +85,3 @@ if __name__ == '__main__':
         command = input("Type 'ok' to send mqtt message: ")
         if command == "ok":
             Simulator.publish_red_infraction()
-        
-

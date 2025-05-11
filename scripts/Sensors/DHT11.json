@@ -1,15 +1,15 @@
 {
-    "ID": "DHT11_A_1",
-    "Name": "temperatureHumiditySensor",
-    "Type": "DHT",
-    "zone": "A",
-    "availableServices": [
-      "MQTT"
-    ],
-    "servicesDetails": [
-      {
-        "serviceType": "MQTT",
-        "topic": "SmartTrafficLight/Sensor/A/weather"
-      }
-    ]
+  "ID": "DHT11_A_1",
+  "Name": "temperatureHumiditySensor",
+  "Type": "DHT",
+  "zone": "A",
+  "availableServices": [
+    "MQTT"
+  ],
+  "servicesDetails": [
+    {
+      "serviceType": "MQTT",
+      "topic": "/sensor"
+    }
+  ]
 }

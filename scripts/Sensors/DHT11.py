@@ -1,46 +1,46 @@
 import time
 import adafruit_dht
-import board  # Importa la libreria board per i pin GPIO
-from MyMQTT import *
+import board
+from MyMQTT import MyMQTT
 import json
 import os
 import threading
 import requests
 
+# MQTT Configuration
+TEMP_TOPIC = "/sensor/temperature"
+HUMIDITY_TOPIC = "/sensor/humidity"
 
 class TempSensor:
     def __init__(self, DHT_info, resource_catalog_file):
-        # Retrieve broker info from service catalog
-        self.resource_catalog = json.load(open(resource_catalog_file))
-        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' \
-                         + self.resource_catalog["ip_port"] + '/broker'
-        r = requests.get(request_string)
-        rjson = json.loads(r.text)
-        self.broker = rjson["name"]
-        self.port = rjson["port"]
-
-        # Details about sensor
         self.DHT_info = DHT_info
-        info = json.load(open(self.DHT_info))
-        self.topic = info["servicesDetails"][0]["topic"]
+        # Load catalog and get broker
+        with open(resource_catalog_file) as f:
+            self.resource_catalog = json.load(f)
+        r = requests.get(f"http://{self.resource_catalog['ip_address']}:{self.resource_catalog['ip_port']}/broker")
+        broker_data = r.json()
+        self.broker = broker_data["name"]
+        self.port = broker_data["port"]
+
+        # Load sensor info
+        with open(DHT_info) as f:
+            info = json.load(f)
         self.clientID = info["ID"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, None)
+        self.topic = info["servicesDetails"][0]["topic"]  # usually "/sensor"
+        self.sensor = adafruit_dht.DHT11(board.D24)
 
-        # Set GPIO pin for the DHT11 sensor (using board.D24)
-        DHT_pin = board.D24  # GPIO pin where the data pin of the DHT11 is connected
-        # Initialize DHT11 sensor using board.D24 for the GPIO pin
-        self.sensor = adafruit_dht.DHT11(DHT_pin)
-    
     def register(self):
-        request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
-        data = json.load(open(self.DHT_info))
         try:
-            r = requests.put(request_string, json.dumps(data, indent=4))
-            print(f'Response: {r.text}')
-        except:
-            print("An error occurred during registration")
+            with open(self.DHT_info) as f:
+                data = json.load(f)
+            r = requests.put(
+                f"http://{self.resource_catalog['ip_address']}:{self.resource_catalog['ip_port']}/registerResource",
+                json.dumps(data, indent=4))
+            print(f"Response: {r.text}")
+        except Exception as e:
+            print(f"Registration error: {e}")
 
-    
     def start(self):
         self.client.start()
 
@@ -52,22 +52,18 @@ class TempSensor:
             self.register()
             time.sleep(10)
 
-    def foreground(self):
-        self.start()
-
-    def publish(self, temperature , humidity):
+    def publish_temperature(self, temperature):
         timestamp = time.time()
         message = {
-            "bn": self.clientID,
-            "bt": timestamp,
+            "bn": f"{self.clientID}/temperature",
             "e": [{
                 "n": "temperature",
                 "u": "C",
+                "t": timestamp,
                 "v": temperature
             }]
         }
-        self.MQTTClient.myPublish(TEMP_TOPIC, message)
-        #print(f"Published to {TEMP_TOPIC}: {json.dumps(message)}")
+        self.client.myPublish(TEMP_TOPIC, message)
         print(f"Temperature: {temperature}°C")
 
     def publish_humidity(self, humidity):
@@ -77,60 +73,44 @@ class TempSensor:
             "e": [{
                 "n": "humidity",
                 "u": "%",
+                "t": timestamp,
                 "v": humidity
-            }
-            ]
+            }]
         }
-        self.MQTTClient.myPublish(HUMIDITY_TOPIC, message)
-        # print(f"Published to {HUMIDITY_TOPIC}: {json.dumps(message)}")
+        self.client.myPublish(HUMIDITY_TOPIC, message)
         print(f"Humidity: {humidity}%")
-
 
     def read_dht11_data(self):
         try:
-            # Attempt to read data from the DHT11 sensor
             temperature = self.sensor.temperature
             humidity = self.sensor.humidity
             if temperature is not None and humidity is not None:
-                self.publish(temperature , humidity)
+                self.publish_temperature(temperature)
+                self.publish_humidity(humidity)
             else:
                 print("Failed to retrieve data from the sensor")
         except RuntimeError as e:
             print(f"DHT11 read error: {e}")
 
 if __name__ == '__main__':
-    # Lines to make automatically retrieve the path of resource_catalog_info.json
     script_dir = os.path.dirname(os.path.abspath(__file__))
     resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
-    resource_catalog_path = os.path.normpath(resource_catalog_path)
     tempSensor_info_path = os.path.join(script_dir, "DHT11.json")
-    tempSensor_info_path = os.path.normpath(tempSensor_info_path)
+
     sens = TempSensor(tempSensor_info_path, resource_catalog_path)
     print("Temperature and Humidity sensor ready... waiting for detection")
 
     b = threading.Thread(name='background', target=sens.background)
-    f = threading.Thread(name='foreground', target=sens.foreground)
+    f = threading.Thread(name='foreground', target=sens.start)
 
     b.start()
     f.start()
 
     try:
         while True:
-            sens.read_dht11_data() # Read data from the DHT11 sensor
-            time.sleep(5)  # Wait for 5 seconds before the next reading
+            sens.read_dht11_data()
+            time.sleep(5)
     except KeyboardInterrupt:
         print("Program interrupted.")
     finally:
         sens.stop()
-
-
-# try:
-#     while True:
-#         read_dht11_data()  
-#         time.sleep(5)  # Wait for 5 seconds before the next reading
-
-# except KeyboardInterrupt:
-#     print("Program interrupted.")
-# finally:
-#     publisher.stop()
-#     sensor.exit()

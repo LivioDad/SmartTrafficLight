@@ -13,7 +13,8 @@
             "topic_publish": "SmartTrafficLight/Led/A",
             "topic_emergency": "SmartTrafficLight/Emergency",
             "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
-            "topic_transition": "SmartTrafficLight/transitions/A_led_1"
+            "topic_transition": "SmartTrafficLight/transitions/A_led_1",
+            "topic_roadice":"SmartTrafficLight/LCD/A/roadIcePredictor"
         }
     ]
 }
