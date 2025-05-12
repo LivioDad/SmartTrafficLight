@@ -87,44 +87,38 @@ class LEDLights:
         self.client.stop()
 
     def notify(self, topic, payload):
-        # print("Received message on topic:", topic, payload)
-        """
-        Callback per i messaggi MQTT.
-        Il nuovo comando viene memorizzato come pending e verrà applicato al termine del ciclo corrente.
-        Se c'è già un comando emergency (attivo o pending), i comandi non-emergency vengono ignorati.
-        """
         payload = json.loads(payload)
-        # Imposta valori di default: se non viene specificato, il comando è "standard"
-        new_mode = "standard"
-        new_duration = self.standard_cycle
+        print(f"[MQTT RECEIVED] Topic: {topic}, Payload: {payload}")
+
+        new_mode = None
+        new_duration = None
         new_direction = None
 
-        if topic == self.topic_zone + f'/{self.intersection_number}':
-            if payload["e"]["v"] == 'vulnerable_pedestrian':
-                new_mode = "vulnerable"
-                new_duration = self.vulnerable_cycle
-            elif payload["e"]["v"] == 'pedestrian':
-                new_mode = "pedestrian"
-                new_duration = self.pedestrian_cycle
+        # Gestione messaggi standard di emergenza
+        if topic == self.topic_emergency and payload.get("zone") == self.zone:
+            new_mode = "emergency"
+            new_duration = self.emergency_cycle
+            new_direction = payload.get("direction")
+            print(f"[EMERGENCY] From manager: zone={self.zone}, direction={new_direction}")
 
-        elif topic == self.topic_emergency:
-            if "zone" in payload:
-                if payload["zone"] == self.zone:
-                    new_mode = "emergency"
-                    new_duration = self.emergency_cycle
-                    new_direction = payload["direction"]
-                    print(f"Emergency announced in zone {payload['zone']} for direction {new_direction}")
+        # Gestione messaggi diretti (doppio publish da emergency_sim)
+        elif "e" in payload and isinstance(payload["e"], dict):
+            e = payload["e"]
+            if e.get("v") == "emergency" and e.get("zone") == self.zone:
+                new_mode = "emergency"
+                new_duration = self.emergency_cycle
+                new_direction = e.get("direction")
+                print(f"[EMERGENCY] Direct: zone={self.zone}, direction={new_direction}")
 
-        with self.cycle_lock:
-            # Se c'è già un comando emergency (attivo o pendente) e il nuovo non lo è, ignoriamo l'update.
-            if ((self.active_mode == "emergency") or (self.pending_mode == "emergency")) and (new_mode != "emergency"):
-                print("Ignoring non-emergency command while emergency is active/pending.")
-                return
-            # Altrimenti, impostiamo il comando pendente.
-            self.pending_mode = new_mode
-            self.pending_duration = new_duration
-            self.pending_direction = new_direction
-        print("Pending command set:", self.pending_mode)
+        if new_mode == "emergency":
+            with self.cycle_lock:
+                if self.active_mode != "emergency" and self.pending_mode != "emergency":
+                    self.pending_mode = new_mode
+                    self.pending_duration = new_duration
+                    self.pending_direction = new_direction
+                    print("[INFO] Emergency cycle scheduled.")
+                else:
+                    print("[INFO] Emergency already active or pending. Ignored.")
 
     def main_cycle(self):
         """

@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1747067116.3280578,
+    "lastUpdate": 1747067753.8065665,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -21,36 +21,6 @@
                 }
             ],
             "lastUpdate": 1746984665.0991364
-        },
-        {
-            "ID": "A_led_2",
-            "Name": "Traffic_light_LED2",
-            "Type": "LED",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Led/A/#",
-                    "topic_zone": "SmartTrafficLight/Led/A",
-                    "topic_status": "SmartTrafficLight/LightStatus/A_led_2",
-                    "topic_trans": "SmartTrafficLight/transitions/A_led_2",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "standard_duty_cycle": 3,
-            "emergency_duty_cycle": 15,
-            "pedestrian_duty_cycle": 5,
-            "vulnerable_road_users_duty_cycle": 7,
-            "pins": {
-                "NS_green": 21,
-                "NS_red": 20,
-                "WE_green": 16,
-                "WE_red": 12
-            },
-            "lastUpdate": 1747041237.9512067
         },
         {
             "ID": "violation_detector_1",
@@ -224,22 +194,20 @@
             "lastUpdate": 1747066724.4163084
         },
         {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
+            "ID": "ES_11",
+            "Name": "EmergecySystem",
+            "Zone": "N/A",
             "availableServices": [
                 "MQTT"
             ],
-            "serviceDetails": [
+            "servicesDetails": [
                 {
                     "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
+                    "topic": "SmartTrafficLight/Emergency",
+                    "topic_direct": "SmartTrafficLight/Led/A/1"
                 }
             ],
-            "lastUpdate": 1747067113.050189
+            "lastUpdate": 1747067691.620237
         },
         {
             "ID": "A_p_1",
@@ -256,23 +224,55 @@
                     "topic_direct": "SmartTrafficLight/Led/A/1"
                 }
             ],
-            "lastUpdate": 1747067115.7013762
+            "lastUpdate": 1747067746.0260093
         },
         {
-            "ID": "ES_11",
-            "Name": "EmergecySystem",
-            "Zone": "N/A",
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1747067753.3650823
+        },
+        {
+            "ID": "A_led_2",
+            "Name": "Traffic_light_LED2",
+            "Type": "LED",
+            "zone": "A",
             "availableServices": [
                 "MQTT"
             ],
             "servicesDetails": [
                 {
                     "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Emergency",
-                    "topic_direct": "SmartTrafficLight/Led/A/1"
+                    "topic": "SmartTrafficLight/Led/A/#",
+                    "topic_zone": "SmartTrafficLight/Led/A",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_2",
+                    "topic_trans": "SmartTrafficLight/transitions/A_led_2",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1747067116.3280487
+            "standard_duty_cycle": 3,
+            "emergency_duty_cycle": 15,
+            "pedestrian_duty_cycle": 5,
+            "vulnerable_road_users_duty_cycle": 7,
+            "pins": {
+                "NS_green": 21,
+                "NS_red": 20,
+                "WE_green": 16,
+                "WE_red": 12
+            },
+            "lastUpdate": 1747067753.806554
         }
     ]
 }
