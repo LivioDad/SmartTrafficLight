@@ -84,33 +84,38 @@ class Predictor:
             self.model = self.train_model()
 
     # Handle incoming MQTT messages
-    def notify(self , payload):
-        temperature = None
-        humidity = None
-        payload = json.loads(payload)
-        timestamp = payload["bt"]
-        for elm in payload["e"]:
-            if elm["n"] == "temperature":
-                temperature = elm["v"]
-            elif elm["n"] == "humidity":
-                humidity = elm["v"]
-        
-        if temperature is not None and humidity is not None:
-            ice_risk = self.model.predict(np.array([[temperature, humidity]]))[0]
-            print(f"Temp: {temperature}°C, Humidity: {humidity}% -> Ice Risk: {ice_risk:.2f}")
-            
-            if ice_risk > 0.5:
-                message = {
-                    "bn": self.clientID,
-                    "bt": timestamp,
-                    "e": [{
-                        "n": "ice_risk",
-                        "u": "%",
-                        "v": ice_risk
-                    }]
-                }
-                self.client.myPublish(self.topicP, message)
-                print("Alert sent!")
+    def notify(self, topic, payload):
+        print(f"Received on topic {topic}: {payload}")
+        try:
+            temperature = None
+            humidity = None
+            payload = json.loads(payload)
+            timestamp = payload["bt"]
+            for elm in payload["e"]:
+                if elm["n"] == "temperature":
+                    temperature = elm["v"]
+                elif elm["n"] == "humidity":
+                    humidity = elm["v"]
+
+            if temperature is not None and humidity is not None:
+                ice_risk = self.model.predict(np.array([[temperature, humidity]]))[0]
+                print(f"Temp: {temperature}°C, Humidity: {humidity}% → Ice Risk: {ice_risk:.2f}")
+                
+                if ice_risk > 0.5:
+                    message = {
+                        "bn": self.clientID,
+                        "bt": timestamp,
+                        "e": [{
+                            "n": "ice_risk",
+                            "u": "%",
+                            "v": ice_risk
+                        }]
+                    }
+                    self.client.myPublish(self.topicP, message)
+                    print("Alert sent!")
+
+        except Exception as e:
+            print(f"Error processing payload: {e}")
 
 # # MQTT Configuration
 # client = mqtt.Client()

@@ -1,0 +1,16 @@
+{
+    "ID": "DHT22_Sensor_01",
+    "Name": "DHT22Sensor",
+    "zone": "A",
+    "availableServices": ["MQTT"],
+    "gpio_pin": "D24",
+    "servicesDetails": [
+      {
+        "serviceType": "MQTT",
+        "topic_temperature": "/sensor/temperature",
+        "topic_humidity": "/sensor/humidity",
+        "topic_predictor": "SmartTrafficLight/Sensor/A/weather"
+      }
+    ]
+  }
+  

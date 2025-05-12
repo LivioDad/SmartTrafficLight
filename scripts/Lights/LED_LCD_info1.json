@@ -9,7 +9,8 @@
         {
           "serviceType": "MQTT",
           "topic": "SmartTrafficLight/Led/A/#",
-          "topic_emergency": "SmartTrafficLight/Emergency"
+          "topic_emergency": "SmartTrafficLight/Emergency",
+          "topic_ice_warning": "SmartTrafficLight/LCD/A/roadIcePredictor"
         }
       ],
       "standard_duty_cycle": 3,
