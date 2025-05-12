@@ -9,7 +9,8 @@
     "servicesDetails": [
       {
         "serviceType": "MQTT",
-        "topic": "SmartTrafficLight/Sensor/A/1"
+        "topic": "SmartTrafficLight/Sensor/A/1",
+        "topic_direct": "SmartTrafficLight/Led/A/1"
       }
     ]
   }
