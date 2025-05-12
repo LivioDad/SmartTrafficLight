@@ -5,7 +5,6 @@ import requests
 import threading
 import os
 
-
 class LedManager:
     def __init__(self, ledmanager_info, resource_catalog_info):
         # Retrieve broker info (port and broker name) from resource catalog info,calling a GET from resource_catalog_server

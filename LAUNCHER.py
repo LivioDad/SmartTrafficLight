@@ -38,22 +38,22 @@ processes = []
 def launch_all():
     to_run = scripts + (simulators if USE_SIMULATORS else [])
     for script in to_run:
-        print(f"▶ Launching {script}...")
+        print(f"Launching {script}...")
         p = subprocess.Popen(["python3", script])
         processes.append(p)
         time.sleep(3)
-    print("✅ All scripts launched.\nType 'stop' to terminate them all.")
+    print("All scripts launched.\nType 'stop' to terminate them all.")
 
 def wait_for_stop_command():
     while True:
         cmd = input()
         if cmd.strip().lower() == "stop":
-            print("\n🛑 Stopping all scripts...")
+            print("\nStopping all scripts...")
             for p in processes:
                 p.terminate()
             for p in processes:
                 p.wait()
-            print("✅ All scripts stopped.")
+            print("All scripts stopped.")
             break
 
 if __name__ == "__main__":

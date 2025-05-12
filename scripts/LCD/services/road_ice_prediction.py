@@ -10,7 +10,6 @@ import threading
 import requests
 import time
 
-
 class Predictor:
     def __init__(self, predictor_info, resource_catalog_file , dataset_file):
         # Retrieve broker info from service catalog
@@ -36,7 +35,6 @@ class Predictor:
         self.model_file = "linear_model.pkl"
         # MODEL_FILE = "data/linear_model.pkl"
         self.take_model()
-
 
     def register(self):
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + self.resource_catalog["ip_port"] + '/registerResource'
@@ -122,7 +120,6 @@ class Predictor:
 
 # print("Service started. Waiting for data...")
 # client.loop_forever()
-
 
 if __name__ == '__main__':
     # Lines to make automatically retrieve the path of resource_catalog_info.json
