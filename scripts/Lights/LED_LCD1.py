@@ -18,6 +18,7 @@ class LED_LCD:
     def __init__(self, led_info_path, resource_catalog_path):
         # Load configuration
         self.resource_catalog = json.load(open(resource_catalog_path))
+        self.status_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "light1_status.json")
         led_info = json.load(open(led_info_path))["LedInfo"]
         self.led_info = led_info
 
@@ -27,6 +28,7 @@ class LED_LCD:
         self.topic = led_info["servicesDetails"][0]["topic"]
         self.topic_emergency = led_info["servicesDetails"][0]["topic_emergency"]
         self.topic_ice_warning = led_info["servicesDetails"][0]["topic_ice_warning"]
+        self.observed_direction = led_info.get("observed_direction", "NS")
 
         self.standard_cycle = led_info["standard_duty_cycle"]
         self.vulnerable_cycle = led_info["vulnerable_road_users_duty_cycle"]
@@ -72,13 +74,18 @@ class LED_LCD:
                 "warning": "EMERG VEHICLE!"
             })
 
-        elif topic == self.topic:
+        elif topic.startswith(self.topic.rstrip('#')):      # <— match con wildcard
             if "e" in payload and isinstance(payload["e"], dict):
                 cmd = payload["e"]["v"]
                 if cmd == "pedestrian":
-                    self.try_set_pending("pedestrian", self.pedestrian_cycle, "PEDESTRIAN CROSS!")
+                    self.try_set_pending("pedestrian",
+                                        self.pedestrian_cycle,
+                                        "PEDESTRIAN CROSS!")
                 elif cmd == "vulnerable_pedestrian":
-                    self.try_set_pending("vulnerable", self.vulnerable_cycle, "VULNERABLE USER!")
+                    self.try_set_pending("vulnerable",
+                                        self.vulnerable_cycle,
+                                        "VULNERABLE USER!")
+
 
         elif topic == self.topic_ice_warning:
             if "e" in payload:
@@ -87,6 +94,19 @@ class LED_LCD:
                         warning_msg = "ICE WARNING!"
                         print(f"[WARNING] Ice risk detected: {entry['v']}")
                         self.try_set_pending("vulnerable", self.vulnerable_cycle, warning_msg)
+                        
+    def write_status_to_file(self):
+        status_data = {
+            "timestamp": time.time(),
+            "intersection": self.zone,
+            "NS": "green_light" if self.NS_green.value else "red_light",
+            "WE": "green_light" if self.WE_green.value else "red_light"
+        }
+        try:
+            with open(self.status_file_path, "w") as f:
+                json.dump(status_data, f)
+        except Exception as e:
+            print(f"[FILE WRITE ERROR] {e}")
 
     def try_set_pending(self, mode, duration, warning):
         priority = PRIORITY[mode]
@@ -117,32 +137,48 @@ class LED_LCD:
 
     def run_cycle(self, mode, duration, direction=None, warning=""):
         print(f"Running cycle: {mode.upper()} ({duration}s)")
+
         if mode == "emergency":
             self.NS_green.off()
             self.NS_red.off()
             self.WE_green.off()
             self.WE_red.off()
+
             if direction == "NS":
                 self.NS_green.on()
                 self.WE_red.on()
             elif direction == "WE":
                 self.WE_green.on()
                 self.NS_red.on()
+
+            self.write_status_to_file()
             self.update_display(line1=warning)
             self.countdown("Clear in {}s", duration)
+
         else:
             self.update_display(line1=warning if mode != "standard" else "")
+
+            # === Fase 1 – Verde NS ===
             self.NS_green.on()
             self.NS_red.off()
             self.WE_red.on()
             self.WE_green.off()
-            self.countdown("Green in {}s", duration)
+            self.write_status_to_file()
+            if self.observed_direction == "WE":
+                self.countdown("Green in {}s", duration)
+            else:
+                self.countdown("Red in {}s", duration)
 
+            # === Fase 2 – Verde WE ===
             self.NS_green.off()
             self.NS_red.on()
             self.WE_red.off()
             self.WE_green.on()
-            self.countdown("Red in {}s", duration)
+            self.write_status_to_file()
+            if self.observed_direction == "NS":
+                self.countdown("Green in {}s", duration)
+            else:
+                self.countdown("Red in {}s", duration)
 
         self.update_display(line1="", line2="")
 
@@ -150,20 +186,40 @@ class LED_LCD:
         self.start()
         print("System started.")
         last_executed_mode = None
+
         while True:
+            # Priorità 1: emergenze
             if self.emergency_queue:
                 job = self.emergency_queue.pop(0)
-                last_executed_mode = None
+                last_executed_mode = None  # forziamo l'esecuzione
+            # Priorità 2: modalità pending (pedestrian, vulnerable, ecc.)
             elif self.pending is not None:
-                if self.pending["mode"] != last_executed_mode or self.pending["mode"] == "emergency":
+                # se è uguale all'ultima eseguita e stessa priorità → la ignoriamo
+                if self.pending["mode"] == last_executed_mode and \
+                self.pending["priority"] == PRIORITY.get(last_executed_mode, 0):
+                    print(f"[INFO] Ignored pending mode '{self.pending['mode']}' (already executed)")
+                    self.pending = None
+                    job = {
+                        "mode": "standard",
+                        "priority": PRIORITY["standard"],
+                        "duration": self.standard_cycle,
+                        "direction": None,
+                        "warning": ""
+                    }
+                    last_executed_mode = "standard"
+                else:
                     job = self.pending
                     last_executed_mode = job["mode"]
                     self.pending = None
-                else:
-                    job = {"mode": "standard", "priority": 0, "duration": self.standard_cycle, "direction": None, "warning": ""}
-                    last_executed_mode = "standard"
+            # Nessuna richiesta → ciclo standard
             else:
-                job = {"mode": "standard", "priority": 0, "duration": self.standard_cycle, "direction": None, "warning": ""}
+                job = {
+                    "mode": "standard",
+                    "priority": PRIORITY["standard"],
+                    "duration": self.standard_cycle,
+                    "direction": None,
+                    "warning": ""
+                }
                 last_executed_mode = "standard"
 
             self.current_mode = job["mode"]

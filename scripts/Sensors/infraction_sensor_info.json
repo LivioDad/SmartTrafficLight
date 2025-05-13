@@ -5,6 +5,7 @@
     "zone": "A",
     "distance_threshold": 30,
     "warning_cooldown": 3,
+    "infraction_cooldown": 2,
     "availableServices": [
       "MQTT"
     ],

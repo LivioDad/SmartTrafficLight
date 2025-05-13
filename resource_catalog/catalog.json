@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1747069874.1746254,
+    "lastUpdate": 1747136267.7196116,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "test.mosquitto.org",
@@ -45,26 +45,6 @@
                 }
             ],
             "lastUpdate": 1747048198.6376383
-        },
-        {
-            "ID": "A_I_1",
-            "Name": "HC_SR04",
-            "Type": "proximity",
-            "zone": "A",
-            "distance_threshold": 30,
-            "warning_cooldown": 3,
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1",
-                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
-                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1747048207.1020808
         },
         {
             "ID": "telegram_bot_1",
@@ -131,74 +111,6 @@
             "lastUpdate": 1747056941.2339256
         },
         {
-            "ID": "A_c_1",
-            "Name": "vulnerablePedestrianSensor",
-            "Type": "PIR",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1",
-                    "topic_direct": "SmartTrafficLight/Led/A/1"
-                }
-            ],
-            "lastUpdate": 1747066724.4163084
-        },
-        {
-            "ID": "ES_11",
-            "Name": "EmergecySystem",
-            "Zone": "N/A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Emergency",
-                    "topic_direct": "SmartTrafficLight/Led/A/1"
-                }
-            ],
-            "lastUpdate": 1747067691.620237
-        },
-        {
-            "ID": "A_p_1",
-            "Name": "VulnerableUsersButton",
-            "Type": "VulnerablePedestrianPresence",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Sensor/A/1",
-                    "topic_direct": "SmartTrafficLight/Led/A/1"
-                }
-            ],
-            "lastUpdate": 1747068006.1597517
-        },
-        {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1747068013.4982343
-        },
-        {
             "ID": "A_led_2",
             "Name": "Traffic_light_LED2",
             "Type": "LED",
@@ -263,10 +175,61 @@
             "lastUpdate": 1747069874.0002
         },
         {
+            "ID": "A_c_1",
+            "Name": "vulnerablePedestrianSensor",
+            "Type": "PIR",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1",
+                    "topic_direct": "SmartTrafficLight/Led/A/1"
+                }
+            ],
+            "lastUpdate": 1747128996.4427233
+        },
+        {
+            "ID": "ES_11",
+            "Name": "EmergecySystem",
+            "Zone": "N/A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Emergency",
+                    "topic_direct": "SmartTrafficLight/Led/A/1"
+                }
+            ],
+            "lastUpdate": 1747130927.5593243
+        },
+        {
+            "ID": "A_p_1",
+            "Name": "VulnerableUsersButton",
+            "Type": "VulnerablePedestrianPresence",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1",
+                    "topic_direct": "SmartTrafficLight/Led/A/1"
+                }
+            ],
+            "lastUpdate": 1747136260.766412
+        },
+        {
             "ID": "A_led_1",
             "Name": "TrafficLight_LCD1",
             "Type": "LED_LCD",
             "zone": "A",
+            "observed_direction": "NS",
             "availableServices": [
                 "MQTT"
             ],
@@ -275,7 +238,8 @@
                     "serviceType": "MQTT",
                     "topic": "SmartTrafficLight/Led/A/#",
                     "topic_emergency": "SmartTrafficLight/Emergency",
-                    "topic_ice_warning": "SmartTrafficLight/LCD/A/roadIcePredictor"
+                    "topic_ice_warning": "SmartTrafficLight/LCD/A/roadIcePredictor",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1"
                 }
             ],
             "standard_duty_cycle": 3,
@@ -283,12 +247,51 @@
             "pedestrian_duty_cycle": 5,
             "vulnerable_road_users_duty_cycle": 7,
             "pins": {
-                "NS_green": 7,
-                "NS_red": 8,
-                "WE_green": 6,
-                "WE_red": 5
+                "NS_green": 6,
+                "NS_red": 5,
+                "WE_green": 7,
+                "WE_red": 8
             },
-            "lastUpdate": 1747069874.1746166
+            "lastUpdate": 1747136263.0279682
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1747136265.3809516
+        },
+        {
+            "ID": "A_I_1",
+            "Name": "HC_SR04",
+            "Type": "proximity",
+            "zone": "A",
+            "distance_threshold": 30,
+            "warning_cooldown": 3,
+            "infraction_cooldown": 2,
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Sensor/A/1",
+                    "topic_status": "SmartTrafficLight/LightStatus/A_led_1",
+                    "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "lastUpdate": 1747136267.7196004
         }
     ]
 }

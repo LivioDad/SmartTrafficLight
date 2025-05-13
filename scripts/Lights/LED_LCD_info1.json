@@ -4,13 +4,15 @@
       "Name": "TrafficLight_LCD1",
       "Type": "LED_LCD",
       "zone": "A",
+      "observed_direction": "NS",
       "availableServices": ["MQTT"],
       "servicesDetails": [
         {
           "serviceType": "MQTT",
           "topic": "SmartTrafficLight/Led/A/#",
           "topic_emergency": "SmartTrafficLight/Emergency",
-          "topic_ice_warning": "SmartTrafficLight/LCD/A/roadIcePredictor"
+          "topic_ice_warning": "SmartTrafficLight/LCD/A/roadIcePredictor",
+          "topic_status":"SmartTrafficLight/LightStatus/A_led_1"
         }
       ],
       "standard_duty_cycle": 3,
@@ -18,10 +20,10 @@
       "pedestrian_duty_cycle": 5,
       "vulnerable_road_users_duty_cycle": 7,
       "pins": {
-        "NS_green": 7,
-        "NS_red": 8,
-        "WE_green": 6,
-        "WE_red": 5
+        "NS_green": 6,
+        "NS_red": 5,
+        "WE_green": 7,
+        "WE_red": 8
       }
     }
   }
