@@ -73,8 +73,13 @@ class DatabaseAdaptor:
             params.append(station)
 
         if from_date and to_date:
-            query += " AND date BETWEEN ? AND ?"
-            params.extend([from_date, to_date])
+            try:
+                from_ts = str(time.mktime(time.strptime(from_date, "%d-%m-%YT%H:%M:%S")))
+                to_ts = str(time.mktime(time.strptime(to_date, "%d-%m-%YT%H:%M:%S")))
+                query += " AND CAST(date AS REAL) BETWEEN ? AND ?"
+                params.extend([from_ts, to_ts])
+            except Exception as e:
+                print(f"[ERROR] Invalid date format: {e}")
 
         return query, params
 

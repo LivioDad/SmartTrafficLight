@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1747257832.9647238,
+    "lastUpdate": 1747264131.6650522,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "mqtt.eclipseprojects.io",
@@ -251,6 +251,22 @@
             "lastUpdate": 1747257603.483061
         },
         {
+            "ID": "db_connector_1",
+            "Name": "Database Adaptor",
+            "Type": "Storage",
+            "zone": "N/A",
+            "availableServices": [
+                "REST"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://127.0.0.1:8080/infraction"
+                }
+            ],
+            "lastUpdate": 1747264129.8324528
+        },
+        {
             "ID": "telegram_bot_1",
             "Name": "Telegram Bot",
             "Type": "Bot",
@@ -275,23 +291,7 @@
                     "police_password": "its_the_sound_of_da_police"
                 }
             ],
-            "lastUpdate": 1747257826.9622455
-        },
-        {
-            "ID": "db_connector_1",
-            "Name": "Database Adaptor",
-            "Type": "Storage",
-            "zone": "N/A",
-            "availableServices": [
-                "REST"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "REST",
-                    "endpoint": "http://127.0.0.1:8080/infraction"
-                }
-            ],
-            "lastUpdate": 1747257832.9647143
+            "lastUpdate": 1747264131.665043
         }
     ]
 }
