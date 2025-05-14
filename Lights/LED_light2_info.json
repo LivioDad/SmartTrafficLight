@@ -4,14 +4,14 @@
 		"Name": "Traffic_light_LED2",
 		"Type": "LED",
 		"zone": "A",
+		"observed_direction": "NS",
 		"availableServices": ["MQTT"],
 		"servicesDetails": [{
 			"serviceType": "MQTT",
 			"topic": "SmartTrafficLight/Led/A/#",
-			"topic_zone": "SmartTrafficLight/Led/A",
-			"topic_status": "SmartTrafficLight/LightStatus/A_led_2",
-			"topic_trans" : "SmartTrafficLight/transitions/A_led_2",
-			"topic_emergency": "SmartTrafficLight/Emergency"
+			"topic_emergency": "SmartTrafficLight/Emergency",
+			"topic_ice_warning": "SmartTrafficLight/LCD/A/roadIcePredictor",
+          	"topic_status":"SmartTrafficLight/LightStatus/A_led_1"
 		}],
 		"standard_duty_cycle": 3,
 		"emergency_duty_cycle": 15,

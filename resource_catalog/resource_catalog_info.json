@@ -1,5 +1,5 @@
 {
-    "broker": "test.mosquitto.org",
+    "broker": "mqtt.eclipseprojects.io",
     "broker_port": 1883,
     "ip_address":"127.0.0.1",
     "ip_port": "9090",

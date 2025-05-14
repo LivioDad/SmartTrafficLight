@@ -6,11 +6,14 @@ from gpiozero import DistanceSensor
 import threading
 import os
 
+# This scripts reads the json file containing the status of the traffic lights, in this case "light1_status.json"
+# and interpolates this information with the distance sensor to detect if a vehicle is passing on a red light.
+
 class InfractionSensor:
     def __init__(self, infractionSensor_info, resource_catalog_file):
         # Retrieve broker info from service catalog
         self.resource_catalog = json.load(open(resource_catalog_file))
-        self.status_file_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts", "Lights", "light1_status.json"))
+        self.status_file_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Lights", "light1_status.json"))
         request_string = 'http://' + self.resource_catalog["ip_address"] + ':' + \
                          self.resource_catalog["ip_port"] + '/broker'
         r = requests.get(request_string)
@@ -27,14 +30,14 @@ class InfractionSensor:
         self.clientID = info["ID"]
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
         self.distance_threshold = info["distance_threshold"]
-        self.warning_cooldown = info["warning_cooldown"]
+        self.warning_cooldown = info["warning_cooldown"]            # Needed not to have duplicated infractions (can be set in the info.json file)
         self.infraction_cooldown = info.get("infraction_cooldown", 2)
 
-        # Stato semafori
+        # Initialize variables
         self.status_NS = None
         self.status_WE = None
 
-        # Direzione monitorata da questo sensore
+        # Direction on which the sensor is placed
         self.observed_direction = "NS"
 
         self.last_warning_time = 0
@@ -80,7 +83,7 @@ class InfractionSensor:
         distance = self.pir.distance * 100  # cm
         now = time.time()
         if distance < self.distance_threshold:
-            # Verifica se la direzione monitorata è rossa
+            # Check if the traffic light is red on the observed direction
             if self.observed_direction == "NS" and self.status_NS == "red_light":
                 if now - self.last_warning_time > self.infraction_cooldown:
                     print(f"Vehicle detected in NS on RED! ({now:.2f})")
@@ -110,7 +113,7 @@ class InfractionSensor:
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json")
     resource_catalog_path = os.path.normpath(resource_catalog_path)
     infractionSensor_info_path = os.path.join(script_dir, "infraction_sensor_info.json")
     infractionSensor_info_path = os.path.normpath(infractionSensor_info_path)

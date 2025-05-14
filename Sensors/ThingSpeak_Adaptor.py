@@ -1,10 +1,12 @@
 import requests
 import json
 from MyMQTT import *
-import random
 import time
 import uuid
 import os
+
+# This script recieves data from the DHT22 sensor via MQTT and sends it to Thingspeak.
+# Due to Thingspeak limitations on a free plan, it sends the temperature and humidity values alternately every 15 seconds.
 
 class Thingspeak_Adaptor:
     def __init__(self,settings):
@@ -68,7 +70,7 @@ class Thingspeak_Adaptor:
     
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))  # Find the directory of the script
-    settings_path = os.path.join(script_dir, "settings.json")  # Build path to JSON file
+    settings_path = os.path.join(script_dir, "ThingSpeak_Adaptor_info.json")  # Build path to JSON file
     settings = json.load(open(settings_path))  # Load JSON file
     ts_adaptor=Thingspeak_Adaptor(settings)
     # ts_adaptor.registerService()

@@ -117,15 +117,6 @@ class Predictor:
         except Exception as e:
             print(f"Error processing payload: {e}")
 
-# # MQTT Configuration
-# client = mqtt.Client()
-# client.on_message = on_message
-# client.connect(MQTT_BROKER, MQTT_PORT, 60)
-# client.subscribe(MQTT_TOPIC_SUBSCRIBE)
-
-# print("Service started. Waiting for data...")
-# client.loop_forever()
-
 if __name__ == '__main__':
     # Lines to make automatically retrieve the path of resource_catalog_info.json
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -149,12 +140,3 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("Interrupted by user. Stopping services...")
         pred.stop()
-
-    # try:
-    #     while True:
-    #         sens.read_dht11_data() # Read data from the DHT11 sensor
-    #         time.sleep(5)  # Wait for 5 seconds before the next reading
-    # except KeyboardInterrupt:
-    #     print("Program interrupted.")
-    # finally:
-    #     sens.stop()

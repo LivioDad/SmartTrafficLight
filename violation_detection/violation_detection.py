@@ -80,7 +80,7 @@ class ViolationDetector:
                 for service in service_info.get("servicesDetails", []):
                     if service.get("serviceType") == "REST":
                         endpoint = service["endpoint"]
-                        print(f"📡 DB Adaptor discovered: {endpoint}")
+                        print(f"DB Adaptor discovered: {endpoint}")
                         return endpoint
             else:
                 print(f"Failed to retrieve db adaptor info: HTTP {response.status_code}")

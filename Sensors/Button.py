@@ -82,7 +82,7 @@ def handle_exit(signum, frame):
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json"))
+    resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json"))
     button_info_path = os.path.normpath(os.path.join(script_dir, "Button_info.json"))
 
     button = PedestrianButton(button_info_path, resource_catalog_path)

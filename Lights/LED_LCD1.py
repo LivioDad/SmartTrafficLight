@@ -7,6 +7,10 @@ from MyMQTT import MyMQTT
 import requests
 import threading
 
+# This script controls the LED and LCD display for a traffic light system.
+# It subscribes to MQTT topics for emergency and pedestrian signals, and manages the light cycles accordingly.
+# It writes continuously the status of the traffic light to a JSON file, to allow the infraction sensor script to read it with few latency
+
 PRIORITY = {
     "standard": 0,
     "pedestrian": 1,
@@ -74,7 +78,7 @@ class LED_LCD:
                 "warning": "EMERG VEHICLE!"
             })
 
-        elif topic.startswith(self.topic.rstrip('#')):      # <— match con wildcard
+        elif topic.startswith(self.topic.rstrip('#')):      # <— match with wildcard
             if "e" in payload and isinstance(payload["e"], dict):
                 cmd = payload["e"]["v"]
                 if cmd == "pedestrian":
@@ -158,7 +162,7 @@ class LED_LCD:
         else:
             self.update_display(line1=warning if mode != "standard" else "")
 
-            # === Fase 1 – Verde NS ===
+            # Phase 1 – Green on NS
             self.NS_green.on()
             self.NS_red.off()
             self.WE_red.on()
@@ -169,7 +173,7 @@ class LED_LCD:
             else:
                 self.countdown("Red in {}s", duration)
 
-            # === Fase 2 – Verde WE ===
+            # Phase 2 – Green on WE
             self.NS_green.off()
             self.NS_red.on()
             self.WE_red.off()
@@ -188,13 +192,14 @@ class LED_LCD:
         last_executed_mode = None
 
         while True:
-            # Priorità 1: emergenze
+            # Priority 1: Emergency
             if self.emergency_queue:
                 job = self.emergency_queue.pop(0)
                 last_executed_mode = None  # forziamo l'esecuzione
-            # Priorità 2: modalità pending (pedestrian, vulnerable, ecc.)
+            # Priority 2: pending mode (pedestrian, vulnerable, etc.)
             elif self.pending is not None:
-                # se è uguale all'ultima eseguita e stessa priorità → la ignoriamo
+                # If it is the same as the last executed and is not emergency --> ignore 
+                # (at least a standard cycle between two particular modes)
                 if self.pending["mode"] == last_executed_mode and \
                 self.pending["priority"] == PRIORITY.get(last_executed_mode, 0):
                     print(f"[INFO] Ignored pending mode '{self.pending['mode']}' (already executed)")
@@ -211,7 +216,7 @@ class LED_LCD:
                     job = self.pending
                     last_executed_mode = job["mode"]
                     self.pending = None
-            # Nessuna richiesta → ciclo standard
+            # If no pending mode, run standard cycle
             else:
                 job = {
                     "mode": "standard",
@@ -245,14 +250,12 @@ class LED_LCD:
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir2 = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
-    resource_catalog_path = os.path.join(parent_dir2, "SmartTrafficLight", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.join(os.path.dirname(script_dir), "resource_catalog", "resource_catalog_info.json")
     led_info_path = os.path.join(script_dir, "LED_LCD_info1.json")
 
     system = LED_LCD(led_info_path, resource_catalog_path)
 
-    # Avvia il thread di registrazione
+    # Start a thread for the registration to the catalog
     threading.Thread(target=system.background_registration, daemon=True).start()
-
-    # Avvia il ciclo principale
+    # Start the main loop
     system.run()

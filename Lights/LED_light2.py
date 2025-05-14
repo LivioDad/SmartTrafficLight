@@ -6,6 +6,9 @@ from gpiozero import LED
 import threading
 import os
 
+# On LED2 only the emergency mode is implemented and no LCD is configured, as an example
+# of a simple traffic light without LCD, buttons or pedestrian presence sensors
+
 class LEDLights:
     def __init__(self, led_info, resource_catalog_file):
         # Retrieve broker info from the resource catalog
@@ -20,9 +23,6 @@ class LEDLights:
         led_info = led_info["LedInfo"]
         self.led_info = led_info
         self.topic = led_info["servicesDetails"][0]["topic"]
-        self.topic_zone = led_info["servicesDetails"][0]["topic_zone"]
-        self.topic_status = led_info["servicesDetails"][0]["topic_status"]
-        self.topic_trans = led_info["servicesDetails"][0]["topic_trans"]
         self.topic_emergency = led_info["servicesDetails"][0]["topic_emergency"]
 
         self.clientID = led_info["Name"]
@@ -45,15 +45,12 @@ class LEDLights:
         self.WE_red = LED(self.pins["WE_red"])
 
         # Cycle management:
-        # active_mode: "standard", "vulnerable", "pedestrian", "emergency"
-        # active_duration: durata per fase del ciclo corrente
-        # active_direction: solo per emergency (None altrimenti)
         self.cycle_lock = threading.Lock()
         self.active_mode = "standard"
         self.active_duration = self.standard_cycle
         self.active_direction = None
 
-        # pending_* memorizza il comando che verrà applicato al termine del ciclo corrente
+        # pending_* keeps in memory the command that will be applied at the end of the current cycle
         self.pending_mode = None
         self.pending_duration = None
         self.pending_direction = None
@@ -68,7 +65,7 @@ class LEDLights:
         data = self.led_info
         try:
             r = requests.put(request_string, json.dumps(data, indent=4))
-            # Debug: print(f'Response: {r.text}')
+            print(f'Response: {r.text}')
         except:
             print("An error occurred during registration")
 
@@ -77,7 +74,6 @@ class LEDLights:
         self.client.start()
         time.sleep(3)
         self.client.mySubscribe(self.topic)
-        self.client.mySubscribe(self.topic_zone)
         self.client.mySubscribe(self.topic_emergency)
 
     def stop(self):
@@ -94,14 +90,14 @@ class LEDLights:
         new_duration = None
         new_direction = None
 
-        # Gestione messaggi standard di emergenza
+        # Standard emergency message management
         if topic == self.topic_emergency and payload.get("zone") == self.zone:
             new_mode = "emergency"
             new_duration = self.emergency_cycle
             new_direction = payload.get("direction")
             print(f"[EMERGENCY] From manager: zone={self.zone}, direction={new_direction}")
 
-        # Gestione messaggi diretti (doppio publish da emergency_sim)
+        # Direct message management (double publish from emergency sim)
         elif "e" in payload and isinstance(payload["e"], dict):
             e = payload["e"]
             if e.get("v") == "emergency" and e.get("zone") == self.zone:
@@ -122,8 +118,8 @@ class LEDLights:
 
     def main_cycle(self):
         """
-        Ciclo principale che esegue un'intera iterazione (ciclo a due fasi) in base alla modalità attiva.
-        Al termine dell'iterazione, se esiste un comando pending, questo viene applicato.
+        Main loop that executes an entire iteration (two-phase loop) based on the active mode.
+        At the end of the iteration, if there is a pending command, it is applied.
         """
         while self.running:
             with self.cycle_lock:
@@ -136,7 +132,7 @@ class LEDLights:
             else:
                 self.run_standard_cycle(duration, mode)
 
-            # Al termine del ciclo, applica il comando pending se presente
+            # At the end of the cycle, apply the pending command if present
             with self.cycle_lock:
                 if self.pending_mode is not None:
                     self.active_mode = self.pending_mode
@@ -147,45 +143,38 @@ class LEDLights:
                     self.pending_direction = None
                     print("Cycle updated to:", self.active_mode)
                 else:
-                    # Se non c'è comando pendente, ritorna alla modalità standard
+                    # If there is no pending command, it returns to standard mode
                     self.active_mode = "standard"
                     self.active_duration = self.standard_cycle
                     self.active_direction = None
 
     def run_standard_cycle(self, duration, mode):
-        if duration == self.standard_cycle and self.active_mode == "standard":
-            self.publish_standard_transition()
         """
-        Esegue un ciclo standard (due fasi) per la modalità specificata.
-        La modalità può essere "standard", "vulnerable" o "pedestrian".
+        Performs a standard (two-phase) cycle for the specified mode.
+        The mode can be "standard", "vulnerable", or "pedestrian".
         """
         print(f"Running {mode} cycle for {duration} seconds per phase.")
-        # Fase 1: NS verde, WE rosso
+        # Phase 1: NS green, WE red
         self.NS_green.on()
         self.NS_red.off()
         self.WE_green.off()
         self.WE_red.on()
-        self.publish_red_light("WE", duration)
-        for remaining in range(duration, 0, -1):
-            self.publish_green_light("NS", remaining)
-            time.sleep(1)
+        time.sleep(duration)
 
-        # Fase 2: NS rosso, WE verde
+        # Phase 2: NS red, WE green
         self.NS_green.off()
         self.NS_red.on()
         self.WE_green.on()
         self.WE_red.off()
-        for remaining in range(duration, 0, -1):
-            self.publish_red_light("NS", remaining)
-            time.sleep(1)
+        time.sleep(duration)
 
     def run_emergency_cycle(self, duration, direction):
         """
-        Esegue il ciclo di emergenza per la durata specificata e con la direzione indicata.
-        Durante l'emergency, eventuali aggiornamenti standard vengono ignorati.
+        Runs the emergency cycle for the specified duration and direction.
+        During the emergency, any standard updates are ignored.
         """
         print("EMERGENCY ACTIVATED. Duration:", duration, "Direction:", direction)
-        # Spegne tutti i LED per resettare lo stato
+        # Turn off all LEDs to reset the state
         self.NS_green.off()
         self.NS_red.off()
         self.WE_green.off()
@@ -199,12 +188,10 @@ class LEDLights:
             self.NS_red.on()
         else:
             print("Direction not specified, defaulting to standard emergency configuration.")
+        
+        time.sleep(duration)
 
-        # Countdown per il tempo di emergenza
-        for remaining in range(duration, 0, -1):
-            self.publish_emergency_light(direction, remaining)
-            time.sleep(1)
-        # Al termine dell'emergency, torna a modalità standard
+        # After the emergency ends, it returns to standard mode
         with self.cycle_lock:
             self.active_mode = "standard"
             self.active_duration = self.standard_cycle
@@ -212,66 +199,6 @@ class LEDLights:
             self.pending_mode = None
             self.pending_duration = None
             self.pending_direction = None
-            self.publish_standard_transition()
-
-    def publish_red_light(self, direction, duration):
-        msg = {
-            "intersection": self.intersection_number,
-            "e": {
-                "n": "red_light",
-                "u": "direction",
-                "t": time.time(),
-                "v": direction,
-                "c": duration,
-            }
-        }
-        self.client.myPublish(self.topic_status, msg)
-        # Debug: print("Published:\n" + json.dumps(msg))
-
-    def publish_green_light(self, direction, remaining):
-        msg = {
-            "intersection": self.intersection_number,
-            "e": {
-                "n": "green_light",
-                "u": "direction",
-                "t": time.time(),
-                "v": direction,
-                "c": remaining,
-            }
-        }
-        self.client.myPublish(self.topic_status, msg)
-        # Debug: print("Published green light message:\n" + json.dumps(msg))
-
-    def publish_emergency_light(self, direction, remaining):
-        """
-        Pubblica il countdown del semaforo in emergenza.
-        """
-        msg = {
-            "intersection": self.intersection_number,
-            "e": {
-                "n": "emergency_light",
-                "u": "direction",
-                "t": time.time(),
-                "v": direction,
-                "c": remaining,
-                "i": self.intersection_number
-            }
-        }
-        self.client.myPublish(self.topic_emergency, msg)
-
-    def publish_standard_transition(self):
-        """
-        Publishes an MQTT message indicating the transition to standard mode.
-        """
-        msg = {
-            "intersection": self.intersection_number,
-            "e": {
-                "n": "standard_transition",
-                "t": time.time()
-            }
-        }
-        self.client.myPublish(self.topic_trans, msg)
-        print("Published standard transition message.")
 
     def background(self):
         """ Periodically registers the LED system every 10 seconds. """
@@ -287,8 +214,7 @@ class LEDLights:
 if __name__ == '__main__':
     # Load JSON configuration files
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir2 = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
-    resource_catalog_path = os.path.join(parent_dir2, "SmartTrafficLight", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.join(os.path.dirname(script_dir), "resource_catalog", "resource_catalog_info.json")
     led_info_path = os.path.join(script_dir, "LED_light2_info.json")
 
     info = json.load(open(led_info_path))

@@ -1,15 +1,9 @@
 from MyMQTT import *
 import time
-import datetime
 import json
 import requests
-from gpiozero import DistanceSensor
-import threading
-import urllib.request
 import requests
-import threading
 import json
-import random
 import os
 
 class SIM_InfractionSensor:
