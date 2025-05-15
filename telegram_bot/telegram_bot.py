@@ -269,12 +269,12 @@ class MyBot:
                 chart_api_key = self.thingspeak_api_key
 
                 temp_path = os.path.join(os.path.dirname(__file__), "charts", "temp_chart.png")
-                generate_chart(api_key=chart_api_key, field=1, ylabel="Temperature (°C)", filename=temp_path, results=num_points)
+                generate_chart(field=1, ylabel="Temperature (°C)", filename=temp_path, results=num_points)
                 with open(temp_path, "rb") as temp_img:
                     self.bot.sendPhoto(chat_ID, temp_img, caption=f"📈 Temperature trend (last {num_points} points)")
 
                 hum_path = os.path.join(os.path.dirname(__file__), "charts", "hum_chart.png")
-                generate_chart(api_key=chart_api_key, field=2, ylabel="Humidity (%)", filename=hum_path, results=num_points)
+                generate_chart(field=2, ylabel="Humidity (%)", filename=hum_path, results=num_points)
                 with open(hum_path, "rb") as hum_img:
                     self.bot.sendPhoto(chat_ID, hum_img, caption=f"📈 Humidity trend (last {num_points} points)")
 
@@ -286,12 +286,14 @@ class MyBot:
             return
 
         if mode == "plate_only":
-            self.execute_search(chat_ID, {"plate": message})
+            plate = message.strip().upper() # Accept plate also if the user types it in lowercase
+            self.execute_search(chat_ID, {"plate": plate})
             return
 
         if mode == "plate" and "plate" not in params:
-            params["plate"] = message
-            self.execute_search(chat_ID, {"plate": message})
+            plate = message.strip().upper()
+            params["plate"] = plate
+            self.execute_search(chat_ID, {"plate": plate})
 
         elif mode == "semaphore" and "semaforo_id" not in params:
             params["semaforo_id"] = message
