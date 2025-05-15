@@ -74,12 +74,10 @@ class DatabaseAdaptor:
 
         if from_date and to_date:
             try:
-                from_ts = str(time.mktime(time.strptime(from_date, "%d-%m-%YT%H:%M:%S")))
-                to_ts = str(time.mktime(time.strptime(to_date, "%d-%m-%YT%H:%M:%S")))
                 query += " AND CAST(date AS REAL) BETWEEN ? AND ?"
-                params.extend([from_ts, to_ts])
+                params.extend([float(from_date), float(to_date)])
             except Exception as e:
-                print(f"[ERROR] Invalid date format: {e}")
+                print(f"[ERROR] Invalid timestamp format: {e}")
 
         return query, params
 
