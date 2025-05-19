@@ -39,14 +39,21 @@ class MyBot:
         self.authenticated_users = set()
         self.search_params = {}
 
-        self.environment_zones = {
-            "a": {
-                "name": "Zone A",
-                "api_url": "https://api.thingspeak.com/channels/2875299/feeds.json?api_key=BTP4K708D2767EMW&results=20",
-                "chart_url_temp": "https://thingspeak.com/channels/2875299/charts/1?bgcolor=%23ffffff&dynamic=true&type=line",
-                "chart_url_hum": "https://thingspeak.com/channels/2875299/charts/2?bgcolor=%23ffffff&dynamic=true&type=line"
+        # Retrieve data from telegram_bot_info.json
+        self.config_data = self.resource_info.get("config", [{}])[0]
+        self.thingspeak_api_key = self.config_data.get("thingspeak_api_key", "")
+        raw_zones = self.resource_info.get("environment_zones", {})
+        self.environment_zones = {}
+
+        for key, zone in raw_zones.items():
+            channel_id = zone["channel_id"]
+            self.environment_zones[key.lower()] = {
+                "name": zone["name"],
+                "api_url": f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={self.thingspeak_api_key}&results=20",
+                "chart_url_temp": f"https://thingspeak.com/channels/{channel_id}/charts/1?bgcolor=%23ffffff&dynamic=true&type=line",
+                "chart_url_hum": f"https://thingspeak.com/channels/{channel_id}/charts/2?bgcolor=%23ffffff&dynamic=true&type=line"
             }
-        }
+
 
         self.bot = telepot.Bot(self.tokenBot)
         MessageLoop(self.bot, {'chat': self.on_chat_message, 'callback_query': self.on_callback_query}).run_as_thread()
@@ -217,7 +224,6 @@ class MyBot:
         params = self.search_params[chat_ID]
         mode = params["mode"]
 
-        # Simple helper to validate date format
         def validate_date_format(date_str):
             try:
                 datetime.strptime(date_str, "%d-%m-%Y")
@@ -228,56 +234,66 @@ class MyBot:
         if mode == "environment":
             zone_key = message.strip().lower()
             zone = self.environment_zones.get(zone_key)
-
             if not zone:
                 self.bot.sendMessage(chat_ID, "❌ Zone not found. Try again or type 'exit' to cancel.")
                 return
 
+            # Salva la zona scelta e chiedi quanti punti mostrare
+            self.search_params[chat_ID] = {
+                "mode": "environment_points",
+                "zone_key": zone_key
+            }
+            self.bot.sendMessage(chat_ID, "📊 How many recent points do you want to display in the chart? (max 500)")
+            return
+
+        elif mode == "environment_points":
+            if not message.isdigit():
+                self.bot.sendMessage(chat_ID, "⚠️ Please enter a valid number.")
+                return
+
+            num_points = int(message)
+            MAX_POINTS = 500
+
+            if num_points < 1 or num_points > MAX_POINTS:
+                self.bot.sendMessage(chat_ID, f"⚠️ Please enter a number between 1 and {MAX_POINTS}.")
+                return
+
+            zone_key = params["zone_key"]
+            zone = self.environment_zones.get(zone_key)
+
+            if not zone:
+                self.bot.sendMessage(chat_ID, "❌ Zone not found. Try again or type 'exit'.")
+                return
+
             try:
-                response = requests.get(zone["api_url"])
-                if response.status_code == 200:
-                    data = response.json()
-                    feeds = data.get("feeds", [])
-                    temperature = humidity = None
-                    for entry in reversed(feeds):
-                        if temperature is None and entry.get("field1"):
-                            temperature = entry["field1"]
-                        if humidity is None and entry.get("field2"):
-                            humidity = entry["field2"]
-                        if temperature and humidity:
-                            break
-                    if temperature or humidity:
-                        self.bot.sendMessage(chat_ID,
-                            f"📍 *{zone['name']}*\n"
-                            f"🌡️ Temperature: *{temperature or 'N/A'}°C*\n"
-                            f"💧 Humidity: *{humidity or 'N/A'}%*",
-                        parse_mode="Markdown")
-                        temp_path = os.path.join(os.path.dirname(__file__),"charts", "temp_chart.png")
-                        generate_chart(api_key="BTP4K708D2767EMW", field=1, ylabel="Temperature (°C)", filename=temp_path)
-                        with open(temp_path, "rb") as temp_img:
-                            self.bot.sendPhoto(chat_ID, temp_img, caption="📈 Temperature trend")
-                        hum_path = os.path.join(os.path.dirname(__file__),"charts", "hum_chart.png")
-                        generate_chart(api_key="BTP4K708D2767EMW", field=2, ylabel="Humidity (%)", filename=hum_path)
-                        with open(hum_path, "rb") as hum_img:
-                            self.bot.sendPhoto(chat_ID, hum_img, caption="📈 Humidity trend")
-                    else:
-                        self.bot.sendMessage(chat_ID, "No valid environmental data.")
-                else:
-                    self.bot.sendMessage(chat_ID, "❌ Failed to fetch data.")
+                chart_api_key = self.thingspeak_api_key
+
+                temp_path = os.path.join(os.path.dirname(__file__), "charts", "temp_chart.png")
+                generate_chart(field=1, ylabel="Temperature (°C)", filename=temp_path, results=num_points)
+                with open(temp_path, "rb") as temp_img:
+                    self.bot.sendPhoto(chat_ID, temp_img, caption=f"📈 Temperature trend (last {num_points} points)")
+
+                hum_path = os.path.join(os.path.dirname(__file__), "charts", "hum_chart.png")
+                generate_chart(field=2, ylabel="Humidity (%)", filename=hum_path, results=num_points)
+                with open(hum_path, "rb") as hum_img:
+                    self.bot.sendPhoto(chat_ID, hum_img, caption=f"📈 Humidity trend (last {num_points} points)")
+
             except Exception as e:
-                self.bot.sendMessage(chat_ID, f"❌ Error: {e}")
+                self.bot.sendMessage(chat_ID, f"❌ Error generating charts: {e}")
 
             self.search_params.pop(chat_ID, None)
             self.send_main_menu(chat_ID)
             return
 
         if mode == "plate_only":
-            self.execute_search(chat_ID, {"plate": message})
+            plate = message.strip().upper() # Accept plate also if the user types it in lowercase
+            self.execute_search(chat_ID, {"plate": plate})
             return
 
         if mode == "plate" and "plate" not in params:
-            params["plate"] = message
-            self.execute_search(chat_ID, {"plate": message})
+            plate = message.strip().upper()
+            params["plate"] = plate
+            self.execute_search(chat_ID, {"plate": plate})
 
         elif mode == "semaphore" and "semaforo_id" not in params:
             params["semaforo_id"] = message
@@ -294,18 +310,27 @@ class MyBot:
                 if not validate_date_format(message):
                     self.bot.sendMessage(chat_ID, "⚠️ Invalid date format. Use DD-MM-YYYY.")
                     return
-                params["from_date"] = message
+                ts = time.mktime(datetime.strptime(message, "%d-%m-%Y").replace(hour=0, minute=0, second=0).timetuple())
+                params["from_date"] = str(int(ts))
                 self.bot.sendMessage(chat_ID, "📅 Enter end date (DD-MM-YYYY):")
+                return
 
-            elif "to_date" not in params:
+            if "to_date" not in params:
                 if not validate_date_format(message):
                     self.bot.sendMessage(chat_ID, "⚠️ Invalid date format. Use DD-MM-YYYY.")
                     return
-                params["to_date"] = message
-                self.execute_search(chat_ID, {
-                    "from": params["from_date"] + "T00:00:00",
-                    "to": params["to_date"] + "T23:59:59"
-                }, repeat=True)
+                ts = time.mktime(datetime.strptime(message, "%d-%m-%Y").replace(hour=23, minute=59, second=59).timetuple())
+                params["to_date"] = str(int(ts))
+
+            if "from_date" in params and "to_date" in params:
+                try:
+                    self.execute_search(chat_ID, {
+                        "from": params["from_date"],
+                        "to": params["to_date"]
+                    }, repeat=True)
+                except Exception as e:
+                    self.bot.sendMessage(chat_ID, f"❌ Error: {e}")
+                return
 
     def execute_search(self, chat_ID, filters, repeat=False):
         db_url = self.get_db_connector_url()
@@ -315,18 +340,6 @@ class MyBot:
 
         if not repeat:
             self.search_params.pop(chat_ID, None)
-        else:
-            if "from" in filters and "to" in filters:
-                self.search_params[chat_ID] = {
-                    "mode": "date_range",
-                    "from_date": filters["from"][:10]
-                }
-                self.bot.sendMessage(chat_ID, "📝 Enter new end date (DD-MM-YYYY), type 'edit start' to change start date, or 'exit' to stop:")
-
-                db_url = self.get_db_connector_url()
-                if not db_url:
-                    self.bot.sendMessage(chat_ID, "Database Connector unavailable.")
-                    return
 
         url = db_url.rstrip("/") + "/?" + urlencode(filters)
 
@@ -340,7 +353,7 @@ class MyBot:
                         for x in violations
                     ])
                     self.search_results = getattr(self, "search_results", {})
-                    self.search_results[chat_ID] = violations  # 🔸 Save results for export
+                    self.search_results[chat_ID] = violations  # Save results for export
                 else:
                     reply = "✅ No violations found."
                     self.search_results = getattr(self, "search_results", {})
@@ -359,15 +372,21 @@ class MyBot:
             ])
             self.bot.sendMessage(chat_ID, "📄 Export options:", reply_markup=keyboard)
 
-        if chat_ID in self.authenticated_users:
+        # Re-prompt after results if date_range mode
+        if repeat and "from" in filters and "to" in filters:
+            self.search_params[chat_ID] = {
+                "mode": "date_range",
+                "from_date": filters["from"][:10]
+            }
+            self.bot.sendMessage(chat_ID, "📝 Enter new end date (DD-MM-YYYY), type 'edit start' to change start date, or 'exit' to stop:")
+
+        elif chat_ID in self.authenticated_users:
             if "plate" in filters:
                 self.search_params[chat_ID] = {"mode": "plate"}
                 self.bot.sendMessage(chat_ID, "🔁 Enter another license plate or type 'exit' to stop:")
             elif "station" in filters:
                 self.search_params[chat_ID] = {"mode": "semaphore"}
                 self.bot.sendMessage(chat_ID, "🔁 Enter another semaphore ID or type 'exit' to stop:")
-            elif "from" in filters:
-                self.search_params[chat_ID] = {"mode": "date_range", "from_date": filters["from"][:10]}
         else:
             self.search_params[chat_ID] = {"mode": "plate_only"}
             self.bot.sendMessage(chat_ID, "🔁 Enter another license plate or type 'exit' to stop:")
