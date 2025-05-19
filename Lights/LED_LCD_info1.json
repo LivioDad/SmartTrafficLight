@@ -15,10 +15,10 @@
           "topic_status":"SmartTrafficLight/LightStatus/A_led_1"
         }
       ],
-      "standard_duty_cycle": 3,
+      "standard_duty_cycle": 5,
       "emergency_duty_cycle": 15,
-      "pedestrian_duty_cycle": 5,
-      "vulnerable_road_users_duty_cycle": 7,
+      "pedestrian_duty_cycle": 7,
+      "vulnerable_road_users_duty_cycle": 9,
       "pins": {
         "NS_green": 6,
         "NS_red": 5,

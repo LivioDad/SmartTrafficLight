@@ -387,5 +387,7 @@ if __name__ == "__main__":
     bot = MyBot(token, resource_catalog_path, info_path, police_password)
     threading.Thread(target=bot.register_to_catalog, daemon=True).start()
 
+    print("Bot is running, access it from this link: https://t.me/Smart_Traffic_Lights_bot")
+
     while True:
         time.sleep(3)
