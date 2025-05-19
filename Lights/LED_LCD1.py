@@ -43,6 +43,7 @@ class LED_LCD:
         self.NS_red = LED(led_info["pins"]["NS_red"])
         self.WE_green = LED(led_info["pins"]["WE_green"])
         self.WE_red = LED(led_info["pins"]["WE_red"])
+        self.ice_warning_led = LED(led_info["pins"]["ice_warning"]) 
 
         self.lcd = LCD(2, 0x27, True)
 
@@ -98,7 +99,14 @@ class LED_LCD:
                         warning_msg = "ICE WARNING!"
                         print(f"[WARNING] Ice risk detected: {entry['v']}")
                         self.try_set_pending("vulnerable", self.vulnerable_cycle, warning_msg)
-                        
+
+                        self.ice_warning_led.on()
+                        threading.Thread(target=self.turn_off_ice_led_after_delay, daemon=True).start()
+
+    def turn_off_ice_led_after_delay(self):
+        time.sleep(30)
+        self.ice_warning_led.off()
+                    
     def write_status_to_file(self):
         status_data = {
             "timestamp": time.time(),

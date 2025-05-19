@@ -23,7 +23,8 @@
         "NS_green": 6,
         "NS_red": 5,
         "WE_green": 7,
-        "WE_red": 8
+        "WE_red": 8,
+        "ice_warning": 21
       }
     }
   }

@@ -17,7 +17,7 @@ class IceRiskSimulator:
         # Load simulator configuration
         self.sim_info = json.load(open(sim_info_path))
         self.topicP = self.sim_info["servicesDetails"][0]["topicP"]
-        self.clientID = self.sim_info["ID"]
+        self.clientID = "ice_risk_simulator"
 
         # Initialize MQTT client
         self.client = MyMQTT(self.clientID, self.broker, self.port, self)
@@ -52,7 +52,7 @@ class IceRiskSimulator:
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "..", "..", "resource_catalog", "resource_catalog_info.json"))
+    resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json"))
     sim_info_path = os.path.normpath(os.path.join(script_dir, "road_ice_info.json"))  # reuse the Predictor's config
 
     simulator = IceRiskSimulator(sim_info_path, resource_catalog_path)
