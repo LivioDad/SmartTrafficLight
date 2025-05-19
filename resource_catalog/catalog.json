@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1747660916.9676833,
+    "lastUpdate": 1747661015.0255535,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "mqtt.eclipseprojects.io",
@@ -75,33 +75,6 @@
                 }
             ],
             "lastUpdate": 1747652868.745806
-        },
-        {
-            "ID": "telegram_bot_1",
-            "Name": "Telegram Bot",
-            "Type": "Bot",
-            "zone": "N/A",
-            "availableServices": [
-                "REST",
-                "Telegram"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "REST",
-                    "endpoint": "http://localhost:8082"
-                },
-                {
-                    "serviceType": "Telegram",
-                    "bot_name": "TrafficBot"
-                }
-            ],
-            "config": [
-                {
-                    "token": "7900374203:AAFatRVBh56VFv9nphon1gpq5jl9g-PeBRU",
-                    "police_password": "its_the_sound_of_da_police"
-                }
-            ],
-            "lastUpdate": 1747655800.4019496
         },
         {
             "ID": 888,
@@ -263,22 +236,6 @@
             "lastUpdate": 1747660692.7523413
         },
         {
-            "ID": "predictA",
-            "Name": "roadIcePredictor",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topicS": "SmartTrafficLight/Sensor/A/weather",
-                    "topicP": "SmartTrafficLight/LCD/A/roadIcePredictor"
-                }
-            ],
-            "lastUpdate": 1747660914.4116971
-        },
-        {
             "ID": "db_connector_1",
             "Name": "Database Adaptor",
             "Type": "Storage",
@@ -292,7 +249,57 @@
                     "endpoint": "http://127.0.0.1:8080/infraction"
                 }
             ],
-            "lastUpdate": 1747660916.9676714
+            "lastUpdate": 1747661007.0120866
+        },
+        {
+            "ID": "predictA",
+            "Name": "roadIcePredictor",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topicS": "SmartTrafficLight/Sensor/A/weather",
+                    "topicP": "SmartTrafficLight/LCD/A/roadIcePredictor"
+                }
+            ],
+            "lastUpdate": 1747661014.4608774
+        },
+        {
+            "ID": "telegram_bot_1",
+            "Name": "Telegram Bot",
+            "Type": "Bot",
+            "zone": "N/A",
+            "availableServices": [
+                "REST",
+                "Telegram"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://localhost:8082"
+                },
+                {
+                    "serviceType": "Telegram",
+                    "bot_name": "TrafficBot"
+                }
+            ],
+            "config": [
+                {
+                    "token": "7900374203:AAFatRVBh56VFv9nphon1gpq5jl9g-PeBRU",
+                    "police_password": "its_the_sound_of_da_police",
+                    "thingspeak_api_key": "BTP4K708D2767EMW"
+                }
+            ],
+            "environment_zones": {
+                "a": {
+                    "name": "Zone A",
+                    "channel_id": "2875299"
+                }
+            },
+            "lastUpdate": 1747661015.0255458
         }
     ]
 }
