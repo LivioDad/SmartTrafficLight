@@ -1,0 +1,140 @@
+
+services:
+  telegram_bot:
+    build: ./telegram_bot
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+  violation_detection:
+    build:
+      context: ./violation_detection
+      dockerfile: Dockerfile
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+  infraction_sensor:
+    build:
+      context: ./violation_detection
+      dockerfile: Dockerfile.sensor
+    privileged: true
+    volumes:
+      - ./shared:/app/shared
+      - /dev:/dev
+    restart: unless-stopped
+
+  thingspeak_adaptor:
+    build:
+      context: ./Sensors
+      dockerfile: Dockerfile.thingspeak
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+  pir_sensor:
+    build:
+      context: ./Sensors
+      dockerfile: Dockerfile.pir
+    privileged: true
+    volumes:
+      - ./shared:/app/shared
+      - /dev:/dev
+    restart: unless-stopped
+
+  dht22_sensor:
+    build:
+      context: ./Sensors
+      dockerfile: Dockerfile.dht22
+    privileged: true
+    volumes:
+      - ./shared:/app/shared
+      - /dev:/dev
+    restart: unless-stopped
+
+  button_sensor:
+    build:
+      context: ./Sensors
+      dockerfile: Dockerfile.button
+    privileged: true
+    volumes:
+      - ./shared:/app/shared
+      - /dev:/dev
+    restart: unless-stopped
+
+  resource_catalog:
+    build: ./resource_catalog
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+  led_lcd_1:
+    build:
+      context: ./Lights
+      dockerfile: Dockerfile.ledlcd1
+    privileged: true
+    volumes:
+      - ./shared:/app/shared
+      - /dev:/dev
+    restart: unless-stopped
+
+  led_light_2:
+    build:
+      context: ./Lights
+      dockerfile: Dockerfile.ledlight2
+    privileged: true
+    volumes:
+      - ./shared:/app/shared
+      - /dev:/dev
+    restart: unless-stopped
+
+  road_ice_predictor:
+    build:
+      context: ./Lights/services
+      dockerfile: Dockerfile.roadice
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+  led_manager:
+    build:
+      context: ./LedManager
+      dockerfile: Dockerfile.ledmanager
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+  database_adaptor:
+    build:
+      context: ./database
+      dockerfile: Dockerfile.dbadaptor
+    volumes:
+      - ./database/infraction_database.db:/app/infraction_database.db
+    restart: unless-stopped
+
+  emergency_simulator:
+    build:
+      context: ./LedManager
+      dockerfile: Dockerfile.emergencysim
+    stdin_open: true      # allows the use of input()
+    tty: true             # allows interactivity with terminal
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+  ice_risk_simulator:
+    build:
+      context: ./Lights/services
+      dockerfile: Dockerfile.icesim
+    stdin_open: true      # allows the use of input()
+    tty: true             # allows interactivity with terminal
+    volumes:
+      - ./shared:/app/shared
+    restart: unless-stopped
+
+
+
+
+
+
+

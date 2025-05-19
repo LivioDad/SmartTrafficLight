@@ -1,0 +1,13 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY . .
+
+# Aggiungi gcc + make + libc-dev per compilare sysv_ipc e altre dipendenze
+RUN apt-get update && \
+    apt-get install -y gcc build-essential libffi-dev && \
+    pip install --no-cache-dir -r requirements.txt
+
+CMD ["python", "ThingSpeak_Adaptor.py"]
+
