@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN apt-get update && \
-    apt-get install -y libgpiod2 python3-smbus i2c-tools && \
-    pip install --no-cache-dir -r requirements.txt
-
+    apt-get install -y python3-smbus i2c-tools && \
+    pip install smbus2
+    
 CMD ["python", "LED_LCD1.py"]
