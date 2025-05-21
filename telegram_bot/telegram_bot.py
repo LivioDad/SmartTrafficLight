@@ -394,7 +394,8 @@ class MyBot:
 if __name__ == "__main__":
     base_path = os.path.dirname(os.path.abspath(__file__))
     info_path = os.path.join(base_path, "telegram_bot_info.json")
-    resource_catalog_path = os.path.normpath(os.path.join(base_path, "..", "resource_catalog", "resource_catalog_info.json"))
+    #resource_catalog_path = os.path.normpath(os.path.join(base_path, "..", "resource_catalog", "resource_catalog_info.json"))
+    resource_catalog_path = os.path.join(base_path, 'resource_catalog_info.json')
 
     with open(info_path, "r") as f:
         info_data = json.load(f)

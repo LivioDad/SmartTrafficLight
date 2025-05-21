@@ -5,8 +5,8 @@ WORKDIR /app
 COPY . .
 
 RUN apt-get update && \
-    apt-get install -y libgpiod2 gcc build-essential libffi-dev && \
-    pip install --no-cache-dir -r requirements.txt && \
-    apt-get update && apt-get install -y lgpio
+    apt-get install -y libgpiod2 gcc build-essential libffi-dev i2c-tools && \
+    pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "DHT22.py"]
+

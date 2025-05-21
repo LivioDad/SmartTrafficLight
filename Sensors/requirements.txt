@@ -3,3 +3,4 @@ paho-mqtt
 gpiozero
 adafruit-blinka
 adafruit-circuitpython-dht
+adafruit-circuitpython-board

@@ -137,7 +137,8 @@ class DatabaseAdaptor:
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the current script
-    resource_catalog_info_path = os.path.join(os.path.dirname(script_dir), 'resource_catalog', 'resource_catalog_info.json')
+    #resource_catalog_info_path = os.path.join(os.path.dirname(script_dir), 'resource_catalog', 'resource_catalog_info.json')
+    resource_catalog_info_path = os.path.join(script_dir, 'resource_catalog_info.json')
 
     cherrypy.quickstart(
         DatabaseAdaptor("database_adaptor_info.json", resource_catalog_info_path),

@@ -66,8 +66,9 @@ class SIM_InfractionSensor:
 if __name__ == '__main__':
     # Lines to make automatically retrieve the path of resource_catalog_info.json
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
-    resource_catalog_path = os.path.normpath(resource_catalog_path)
+    #resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    #resource_catalog_path = os.path.normpath(resource_catalog_path)
+    resource_catalog_path = os.path.join(script_dir, 'resource_catalog_info.json')
     infractionSensor_info_path = os.path.join(script_dir, "infractionSensor_info.json")
     infractionSensor_info_path = os.path.normpath(infractionSensor_info_path)
     Simulator = SIM_InfractionSensor(infractionSensor_info_path, resource_catalog_path)

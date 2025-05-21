@@ -1,39 +1,35 @@
+# =====================================
+# 🔧 Modifiche apportate:
+# - Aggiunto `depends_on` per garantire che resource_catalog e database_adaptor vengano avviati prima dei servizi che li usano.
+# - Aggiunto `restart: always` per i container critici (utile su Raspberry Pi per auto-riavvio).
+# - 
+# =====================================
+
+
+version: "3.9"
+
 services:
-  resource_catalog:
-    build: ./resource_catalog
-    volumes:
-      - ./resource_catalog:/resource_catalog
-    restart: unless-stopped
-
-  database_adaptor:
-    build:
-      context: ./database
-      dockerfile: Dockerfile.dbadaptor
-    volumes:
-      - ./database/infraction_database.db:/app/infraction_database.db
-    depends_on:
-      - resource_catalog
-    restart: unless-stopped
-
   telegram_bot:
     build: ./telegram_bot
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: unless-stopped
     depends_on:
       - resource_catalog
       - database_adaptor
-    restart: unless-stopped
 
   violation_detection:
     build:
       context: ./violation_detection
       dockerfile: Dockerfile
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
       - database_adaptor
-    restart: unless-stopped
 
   infraction_sensor:
     build:
@@ -41,22 +37,22 @@ services:
       dockerfile: Dockerfile.sensor
     privileged: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
       - /dev:/dev
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-      - database_adaptor
-    restart: unless-stopped
 
   thingspeak_adaptor:
     build:
       context: ./Sensors
       dockerfile: Dockerfile.thingspeak
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
 
   pir_sensor:
     build:
@@ -64,11 +60,12 @@ services:
       dockerfile: Dockerfile.pir
     privileged: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
       - /dev:/dev
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
 
   dht22_sensor:
     build:
@@ -76,11 +73,12 @@ services:
       dockerfile: Dockerfile.dht22
     privileged: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
       - /dev:/dev
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
 
   button_sensor:
     build:
@@ -88,11 +86,18 @@ services:
       dockerfile: Dockerfile.button
     privileged: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
       - /dev:/dev
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
+
+  resource_catalog:
+    build: ./resource_catalog
+    volumes:
+      - ./shared:/app/shared
+    restart: always
 
   led_lcd_1:
     build:
@@ -100,11 +105,12 @@ services:
       dockerfile: Dockerfile.ledlcd1
     privileged: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
       - /dev:/dev
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
 
   led_light_2:
     build:
@@ -112,52 +118,65 @@ services:
       dockerfile: Dockerfile.ledlight2
     privileged: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
       - /dev:/dev
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
 
   road_ice_predictor:
     build:
       context: ./Lights/services
       dockerfile: Dockerfile.roadice
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
+      - ./linear_model.pkl:/app/linear_model.pkl:ro
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
 
   led_manager:
     build:
       context: ./LedManager
       dockerfile: Dockerfile.ledmanager
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
     depends_on:
       - resource_catalog
-    restart: unless-stopped
+
+  database_adaptor:
+    build:
+      context: ./database
+      dockerfile: Dockerfile.dbadaptor
+    volumes:
+      - ./database/infraction_database.db:/app/infraction_database.db
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: always
+    depends_on:
+      - resource_catalog
 
   emergency_simulator:
     build:
       context: ./LedManager
       dockerfile: Dockerfile.emergencysim
-    stdin_open: true
-    tty: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: unless-stopped
     depends_on:
       - resource_catalog
-    restart: unless-stopped
 
   ice_risk_simulator:
     build:
       context: ./Lights/services
       dockerfile: Dockerfile.icesim
-    stdin_open: true
-    tty: true
     volumes:
-      - ./resource_catalog:/resource_catalog
+      - ./shared:/app/shared
+      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: unless-stopped
     depends_on:
       - resource_catalog
-    restart: unless-stopped
