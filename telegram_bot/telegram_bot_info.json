@@ -7,7 +7,7 @@
   "servicesDetails": [
     {
       "serviceType": "REST",
-      "endpoint": "http://localhost:8082"
+      "endpoint": "http://database_adaptor:8080"
     },
     {
       "serviceType": "Telegram",

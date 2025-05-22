@@ -7,7 +7,6 @@ import time
 import os
 from MyMQTT import MyMQTT
 
-
 class ViolationDetector:
     def __init__(self, client_id, mqtt_broker, mqtt_port, mqtt_topic,
                  resource_info_path, resource_catalog_info_path):
@@ -129,10 +128,8 @@ if __name__ == "__main__":
 
     # File paths
     
-    info_path = os.path.join(base_path, "violation_detection_info.json")
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json")
-    resource_catalog_path = os.path.normpath(resource_catalog_path)
+    info_path = "violation_detection_info.json"
+    resource_catalog_path = "resource_catalog_info.json"
 
     # Load config list from JSON
     with open(info_path, "r") as f:

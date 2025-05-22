@@ -38,6 +38,7 @@ class MyBot:
         self.db_connector_url = self.get_db_connector_url()
         self.authenticated_users = set()
         self.search_params = {}
+        self.search_results = {}
 
         # Retrieve data from telegram_bot_info.json
         self.config_data = self.resource_info.get("config", [{}])[0]
@@ -392,9 +393,8 @@ class MyBot:
             self.bot.sendMessage(chat_ID, "🔁 Enter another license plate or type 'exit' to stop:")
 
 if __name__ == "__main__":
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    info_path = os.path.join(base_path, "telegram_bot_info.json")
-    resource_catalog_path = os.path.normpath(os.path.join(base_path, "..", "resource_catalog", "resource_catalog_info.json"))
+    info_path = "telegram_bot_info.json"
+    resource_catalog_path = "resource_catalog_info.json"
 
     with open(info_path, "r") as f:
         info_data = json.load(f)

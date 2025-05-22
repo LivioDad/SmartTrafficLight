@@ -57,7 +57,6 @@ class TLCatalogManager(object):
                     return 'Resource/Device ID not found'
 
 
-
     #PUT used to register resouces in the service, receives a json message with the resource info
     def PUT(self, *uri, **params):
         if uri[0] == 'registerResource': #endpoint to register od update the resource
@@ -93,8 +92,7 @@ class TLCatalogManager(object):
 
 if __name__ == '__main__':
     # automatically retrieve resource_catalog_info.json path
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_info_path = os.path.join(script_dir, "resource_catalog_info.json")
+    resource_info_path = "resource_catalog_info.json"
 
     res_cat_server = TLCatalogManager(resource_info_path)
 

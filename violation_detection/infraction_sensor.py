@@ -113,7 +113,7 @@ class InfractionSensor:
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog_info.json")
     resource_catalog_path = os.path.normpath(resource_catalog_path)
     infractionSensor_info_path = os.path.join(script_dir, "infraction_sensor_info.json")
     infractionSensor_info_path = os.path.normpath(infractionSensor_info_path)

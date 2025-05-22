@@ -9,7 +9,7 @@ import requests
 # Load configuration from JSON
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sensor_info_path = os.path.join(script_dir, "DHT22_info.json")
-catalog_info_path = os.path.normpath(os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json"))
+catalog_info_path = os.path.normpath(os.path.join(script_dir, "..", "resource_catalog_info.json"))
 
 with open(sensor_info_path) as f:
     config = json.load(f)
@@ -18,6 +18,7 @@ with open(catalog_info_path) as f:
 
 # Get broker info from catalog
 request_string = f"http://{catalog['ip_address']}:{catalog['ip_port']}/broker"
+print(f"Connecting to: {request_string}")
 r = requests.get(request_string)
 rjson = json.loads(r.text)
 BROKER = rjson["name"]

@@ -1,6 +1,6 @@
 {
     "ID": "ES_11",
-    "Name": "EmergecySystem",
+    "Name": "EmergencySystem",
     "Zone" : "N/A" , 
     "availableServices": [
       "MQTT"

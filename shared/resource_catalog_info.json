@@ -1,0 +1,8 @@
+{
+    "broker": "192.168.1.18",
+    "broker_port": 1883,
+    "ip_address":"resource_catalog",
+    "ip_port": "9090",
+    "base_topic": "SmartTrafficLight",
+    "comments": "Modify the 'ip_address' to the one of the machine where the resource catalog server is running"
+}

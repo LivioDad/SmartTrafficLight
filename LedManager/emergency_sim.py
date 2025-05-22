@@ -69,11 +69,10 @@ class EmergencySystem:
             self.call_emergency(zone, direction)
 
 if __name__ == '__main__':
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json"))
-    emergency_info_path = os.path.normpath(os.path.join(script_dir, "emergency_sim_info.json"))
+    emergency_info_path = "emergency_sim_info.json"
+    resource_catalog_info_path = "resource_catalog_info.json"
 
-    em = EmergencySystem(emergency_info_path, resource_catalog_path)
+    em = EmergencySystem(emergency_info_path, resource_catalog_info_path)
     threading.Thread(target=em.register, daemon=True).start()
     em.start()
     em.menu()

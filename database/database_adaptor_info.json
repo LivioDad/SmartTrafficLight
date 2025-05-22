@@ -7,7 +7,7 @@
     "servicesDetails": [
       {
         "serviceType": "REST",
-        "endpoint": "http://127.0.0.1:8080/infraction"
+        "endpoint": "http://database_adaptor:8080/infraction"
       }
     ]
   }

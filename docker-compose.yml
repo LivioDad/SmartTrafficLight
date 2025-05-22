@@ -1,182 +1,99 @@
-# =====================================
-# 🔧 Modifiche apportate:
-# - Aggiunto `depends_on` per garantire che resource_catalog e database_adaptor vengano avviati prima dei servizi che li usano.
-# - Aggiunto `restart: always` per i container critici (utile su Raspberry Pi per auto-riavvio).
-# - 
-# =====================================
-
-
 version: "3.9"
 
 services:
-  telegram_bot:
-    build: ./telegram_bot
-    volumes:
-      - ./shared:/app/shared
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: unless-stopped
-    depends_on:
-      - resource_catalog
-      - database_adaptor
-
-  violation_detection:
-    build:
-      context: ./violation_detection
-      dockerfile: Dockerfile
-    volumes:
-      - ./shared:/app/shared
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
-      - database_adaptor
-
-  infraction_sensor:
-    build:
-      context: ./violation_detection
-      dockerfile: Dockerfile.sensor
-    privileged: true
-    volumes:
-      - ./shared:/app/shared
-      - /dev:/dev
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
-
-  thingspeak_adaptor:
-    build:
-      context: ./Sensors
-      dockerfile: Dockerfile.thingspeak
-    volumes:
-      - ./shared:/app/shared
-    restart: always
-    depends_on:
-      - resource_catalog
-
-  pir_sensor:
-    build:
-      context: ./Sensors
-      dockerfile: Dockerfile.pir
-    privileged: true
-    volumes:
-      - ./shared:/app/shared
-      - /dev:/dev
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
-
-  dht22_sensor:
-    build:
-      context: ./Sensors
-      dockerfile: Dockerfile.dht22
-    privileged: true
-    volumes:
-      - ./shared:/app/shared
-      - /dev:/dev
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
-
-  button_sensor:
-    build:
-      context: ./Sensors
-      dockerfile: Dockerfile.button
-    privileged: true
-    volumes:
-      - ./shared:/app/shared
-      - /dev:/dev
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
-
   resource_catalog:
     build: ./resource_catalog
+    container_name: resource_catalog
+    ports:
+      - "8080:9090"
     volumes:
-      - ./shared:/app/shared
-    restart: always
+      - ./resource_catalog/catalog.json:/app/catalog.json
+      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: unless-stopped
 
-  led_lcd_1:
-    build:
-      context: ./Lights
-      dockerfile: Dockerfile.ledlcd1
-    privileged: true
-    volumes:
-      - ./shared:/app/shared
-      - /dev:/dev
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
+  database_adaptor:
+    build: ./database
+    container_name: database_adaptor
     depends_on:
       - resource_catalog
-
-  led_light_2:
-    build:
-      context: ./Lights
-      dockerfile: Dockerfile.ledlight2
-    privileged: true
+    ports:
+      - "8081:8081"
     volumes:
-      - ./shared:/app/shared
-      - /dev:/dev
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
-
-  road_ice_predictor:
-    build:
-      context: ./Lights/services
-      dockerfile: Dockerfile.roadice
-    volumes:
-      - ./shared:/app/shared
-      - ./linear_model.pkl:/app/linear_model.pkl:ro
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
+      - ./database/infraction_database.db:/app/infraction_database.db
+      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+      - ./database/database_adaptor_info.json:/app/database_adaptor_info.json:ro
+    restart: unless-stopped
 
   led_manager:
     build:
       context: ./LedManager
       dockerfile: Dockerfile.ledmanager
-    volumes:
-      - ./shared:/app/shared
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
+    container_name: led_manager
     depends_on:
       - resource_catalog
-
-  database_adaptor:
-    build:
-      context: ./database
-      dockerfile: Dockerfile.dbadaptor
+      - database_adaptor
     volumes:
-      - ./database/infraction_database.db:/app/infraction_database.db
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: always
-    depends_on:
-      - resource_catalog
-
-  emergency_simulator:
-    build:
-      context: ./LedManager
-      dockerfile: Dockerfile.emergencysim
-    volumes:
-      - ./shared:/app/shared
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+      - ./LedManager/led_manager_info.json:/app/led_manager_info.json:ro
+      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
     restart: unless-stopped
-    depends_on:
-      - resource_catalog
 
-  ice_risk_simulator:
+  telegram_bot:
     build:
-      context: ./Lights/services
-      dockerfile: Dockerfile.icesim
+      context: ./telegram_bot
+      dockerfile: Dockerfile
+    container_name: telegram_bot
     volumes:
-      - ./shared:/app/shared
-      - ./resource_catalog/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+      - ./telegram_bot/telegram_bot_info.json:/app/telegram_bot_info.json:ro
+      - ./telegram_bot/Plates_dataset:/app/Plates_dataset
+      - ./telegram_bot/charts:/app/charts
     restart: unless-stopped
+
+  thingspeak_adaptor:
+    build:
+      context: ./Sensors
+      dockerfile: Dockerfile.thingspeak
+    container_name: ThingSpeak_Adaptor
     depends_on:
       - resource_catalog
+    volumes:
+      - ./Sensors/ThingSpeak_Adaptor_info.json:/app/ThingSpeak_Adaptor_info.json:ro
+    restart: unless-stopped
+
+  violation_detector:
+    build: ./violation_detection
+    container_name: violation_detection
+    depends_on:
+      - resource_catalog
+      - database_adaptor
+    volumes:
+      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+      - ./violation_detection/violation_detection_info.json:/app/violation_detection_info.json:ro
+    restart: unless-stopped
+    command: ["python", "violation_detection.py"]
+
+  # emergency_simulator:
+  #   build:
+  #     context: ./LedManager
+  #     dockerfile: Dockerfile.emergencysim
+  #   container_name: emergency_simulator
+  #   depends_on:
+  #     - resource_catalog
+  #   stdin_open: true     # for input()
+  #   tty: true            # interactive terminal
+  #   volumes:
+  #     - ./LedManager/emergency_sim_info.json:/app/emergency_sim_info.json:ro
+  #     - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+  #   restart: unless-stopped
+
+
+  # thingspeak_adaptor:
+  #   build:
+  #     context: ./Sensors
+  #     dockerfile: Dockerfile.thingspeak
+  #   container_name: thingspeak_adaptor
+  #   depends_on:
+  #     - resource_catalog
+  #   volumes:
+  #     - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+  #   restart: unless-stopped

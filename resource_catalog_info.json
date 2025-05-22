@@ -1,8 +1,8 @@
 {
     "broker": "mqtt.eclipseprojects.io",
     "broker_port": 1883,
-    "ip_address":"127.0.0.1",
-    "ip_port": "9090",
+    "ip_address":"localhost",
+    "ip_port": "8080",
     "base_topic": "SmartTrafficLight",
     "comments": "Modify the 'ip_address' to the one of the machine where the resource catalog server is running"
 }
