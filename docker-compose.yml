@@ -60,7 +60,7 @@ services:
       - ./Sensors/ThingSpeak_Adaptor_info.json:/app/ThingSpeak_Adaptor_info.json:ro
     restart: unless-stopped
 
-  violation_detector:
+  violation_detection:
     build: ./violation_detection
     container_name: violation_detection
     depends_on:
@@ -86,14 +86,13 @@ services:
   #     - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
   #   restart: unless-stopped
 
-
-  # thingspeak_adaptor:
-  #   build:
-  #     context: ./Sensors
-  #     dockerfile: Dockerfile.thingspeak
-  #   container_name: thingspeak_adaptor
-  #   depends_on:
-  #     - resource_catalog
-  #   volumes:
-  #     - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-  #   restart: unless-stopped
+  thingspeak_adaptor:
+    build:
+      context: ./Sensors
+      dockerfile: Dockerfile.thingspeak
+    container_name: thingspeak_adaptor
+    depends_on:
+      - resource_catalog
+    volumes:
+      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+    restart: unless-stopped
