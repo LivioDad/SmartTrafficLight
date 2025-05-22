@@ -1,0 +1,9 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+COPY road_ice_prediction.py road_ice_info.json road_ice_prediction.json MyMQTT.py linear_model.pkl requirements.txt ./
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["python", "road_ice_prediction.py"]

@@ -6,13 +6,16 @@ import json
 import requests
 import threading
 import os
+import pytz
 from urllib.parse import urlencode
 from datetime import datetime
 from dynamic_charts import generate_chart
 
 def format_date(ts):
     try:
-        return datetime.fromtimestamp(float(ts)).strftime("%d-%m-%Y %H:%M:%S")
+        utc_dt = datetime.fromtimestamp(float(ts), tz=pytz.utc)
+        local_dt = utc_dt.astimezone(pytz.timezone("Europe/Rome"))
+        return local_dt.strftime("%d-%m-%Y %H:%M:%S")
     except:
         return str(ts)
 
@@ -182,6 +185,11 @@ class MyBot:
         # Set search mode based on user selection (plate/semaphore/date_range)
         self.search_params[from_ID] = {"mode": query_data}
         self.bot.answerCallbackQuery(query_ID, text=f"Search by {query_data.replace('_', ' ').title()} selected.")
+
+        # Check authorization for restricted queries
+        if query_data in ["semaphore", "date_range"] and from_ID not in self.authenticated_users:
+            self.bot.sendMessage(from_ID, "❌ This function requires authentication.\n🔐 Please login with /auth <password>")
+            return
 
         if query_data == "plate":
             self.bot.sendMessage(from_ID, "🚗 Enter license plate:")

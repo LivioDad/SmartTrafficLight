@@ -79,6 +79,7 @@ class DatabaseAdaptor:
             except Exception as e:
                 print(f"[ERROR] Invalid timestamp format: {e}")
 
+        query += " ORDER BY CAST(date AS REAL) ASC"
         return query, params
 
     exposed = True

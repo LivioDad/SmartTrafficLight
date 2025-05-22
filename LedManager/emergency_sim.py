@@ -69,8 +69,8 @@ class EmergencySystem:
             self.call_emergency(zone, direction)
 
 if __name__ == '__main__':
-    emergency_info_path = "emergency_sim_info.json"
-    resource_catalog_info_path = "resource_catalog_info.json"
+    emergency_info_path = os.path.join(os.path.dirname(__file__), "emergency_sim_info.json")
+    resource_catalog_info_path = os.path.join(os.path.dirname(__file__), "..", "resource_catalog_info.json")
 
     em = EmergencySystem(emergency_info_path, resource_catalog_info_path)
     threading.Thread(target=em.register, daemon=True).start()

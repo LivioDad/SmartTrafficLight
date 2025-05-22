@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   resource_catalog:
     build: ./resource_catalog
@@ -53,7 +51,7 @@ services:
     build:
       context: ./Sensors
       dockerfile: Dockerfile.thingspeak
-    container_name: ThingSpeak_Adaptor
+    container_name: thingspeak_adaptor
     depends_on:
       - resource_catalog
     volumes:
@@ -70,7 +68,20 @@ services:
       - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
       - ./violation_detection/violation_detection_info.json:/app/violation_detection_info.json:ro
     restart: unless-stopped
-    command: ["python", "violation_detection.py"]
+
+  road_ice_prediction:
+    build:
+      context: ./services
+      dockerfile: Dockerfile.iceprediction
+    container_name: road_ice_prediction
+    depends_on:
+      - resource_catalog
+    volumes:
+      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
+      - ./services/road_ice_info.json:/app/road_ice_info.json:ro
+      - ./services/road_ice_prediction.json:/app/road_ice_prediction.json:ro
+      - ./services/linear_model.pkl:/app/linear_model.pkl
+    restart: unless-stopped
 
   # emergency_simulator:
   #   build:
@@ -85,14 +96,3 @@ services:
   #     - ./LedManager/emergency_sim_info.json:/app/emergency_sim_info.json:ro
   #     - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
   #   restart: unless-stopped
-
-  thingspeak_adaptor:
-    build:
-      context: ./Sensors
-      dockerfile: Dockerfile.thingspeak
-    container_name: thingspeak_adaptor
-    depends_on:
-      - resource_catalog
-    volumes:
-      - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
-    restart: unless-stopped
