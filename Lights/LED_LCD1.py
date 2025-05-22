@@ -258,8 +258,7 @@ class LED_LCD:
 
 if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    #resource_catalog_path = os.path.join(os.path.dirname(script_dir), "resource_catalog", "resource_catalog_info.json")
-    resource_catalog_path = os.path.join(script_dir, 'resource_catalog_info.json')
+    resource_catalog_path = os.path.join(os.path.dirname(script_dir), "resource_catalog", "resource_catalog_info.json")
     led_info_path = os.path.join(script_dir, "LED_LCD_info1.json")
 
     system = LED_LCD(led_info_path, resource_catalog_path)

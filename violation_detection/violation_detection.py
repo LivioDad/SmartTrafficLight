@@ -131,9 +131,8 @@ if __name__ == "__main__":
     
     info_path = os.path.join(base_path, "violation_detection_info.json")
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    #resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json")
-    #resource_catalog_path = os.path.normpath(resource_catalog_path)
-    resource_catalog_path = os.path.join(base_path, 'resource_catalog_info.json')
+    resource_catalog_path = os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
 
     # Load config list from JSON
     with open(info_path, "r") as f:

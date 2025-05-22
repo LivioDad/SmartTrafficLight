@@ -9,9 +9,7 @@ import requests
 # Load configuration from JSON
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sensor_info_path = os.path.join(script_dir, "DHT22_info.json")
-#catalog_info_path = os.path.normpath(os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json"))
-catalog_info_path = os.path.join(script_dir, "resource_catalog_info.json")
-
+catalog_info_path = os.path.normpath(os.path.join(script_dir, "..", "resource_catalog", "resource_catalog_info.json"))
 
 with open(sensor_info_path) as f:
     config = json.load(f)

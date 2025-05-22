@@ -120,9 +120,8 @@ class Predictor:
 if __name__ == '__main__':
     # Lines to make automatically retrieve the path of resource_catalog_info.json
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    #resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
-    #resource_catalog_path = os.path.normpath(resource_catalog_path)
-    resource_catalog_path = os.path.join(script_dir, 'resource_catalog_info.json')
+    resource_catalog_path = os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json")
+    resource_catalog_path = os.path.normpath(resource_catalog_path)
     road_ice_info_path = os.path.join(script_dir, "road_ice_info.json")
     road_ice_info_path = os.path.normpath(road_ice_info_path)
     train_dataset_path = os.path.join(script_dir, "road_ice_prediction.json")

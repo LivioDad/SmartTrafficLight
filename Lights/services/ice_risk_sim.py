@@ -52,8 +52,7 @@ class IceRiskSimulator:
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    #resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json"))
-    resource_catalog_path = os.path.join(script_dir, 'resource_catalog_info.json')
+    resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "..", "resource_catalog", "resource_catalog_info.json"))
     sim_info_path = os.path.normpath(os.path.join(script_dir, "road_ice_info.json"))  # reuse the Predictor's config
 
     simulator = IceRiskSimulator(sim_info_path, resource_catalog_path)
