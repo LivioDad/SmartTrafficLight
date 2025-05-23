@@ -58,23 +58,33 @@ while true; do
 
   case $choice in
     1)
-      echo "Launching emergency_sim.py..."
-      python3 LedManager/emergency_sim.py
+      echo "Launching emergency_sim.py... (Press Ctrl+C to return to menu)"
+      trap "" SIGINT
+      ( trap "echo -e '\\nReturning to menu...'; exit" SIGINT; python3 LedManager/emergency_sim.py )
+      trap - SIGINT
       ;;
+
     2)
-      echo "Launching ice_risk_sim.py..."
-      python3 services/ice_risk_sim.py
+      echo "Launching ice_risk_sim.py... (Press Ctrl+C to return to menu)"
+      trap "" SIGINT
+      ( trap "echo -e '\\nReturning to menu...'; exit" SIGINT; python3 services/ice_risk_sim.py )
+      trap - SIGINT
       ;;
+
     3)
-      echo "Launching Add_semaphore.py..."
-      python3 Semaphores/Add_semaphore.py
+      echo "Launching Add_semaphore.py... (Press Ctrl+C to return to menu)"
+      trap "" SIGINT
+      ( trap "echo -e '\\nReturning to menu...'; exit" SIGINT; python3 Semaphores/Add_semaphore.py )
+      trap - SIGINT
       ;;
+
     4)
       echo "Exiting optional script menu."
       break
       ;;
+
     *)
-      echo "Invalid choice. Please enter 1, 2, or 3."
+      echo "Invalid choice. Please enter 1, 2, 3 or 4."
       ;;
   esac
 done
