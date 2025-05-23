@@ -113,7 +113,7 @@ if __name__ == '__main__':
     script_dir = os.path.dirname(os.path.abspath(__file__))
     resource_catalog_path = os.path.normpath(os.path.join(script_dir, "..", "resource_catalog_info.json"))
     infractionSensor_info_path = os.path.normpath(os.path.join(script_dir, "infraction_sensor_info.json"))
-    semaphore_info_file = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Lights", "Semaphore_1_info.json"))
+    semaphore_info_file = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "Semaphores", "Semaphore_1_info.json"))
 
     pres = InfractionSensor(infractionSensor_info_path, resource_catalog_path, semaphore_info_file)
     print("Distance sensor ready... waiting for detection")

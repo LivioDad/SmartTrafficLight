@@ -1,32 +1,34 @@
 #!/bin/bash
 
-PID_FILE="script_pids.txt"
+echo "Stopping all running scripts..."
 
-echo "Stopping all registered scripts..."
-if [ -f "$PID_FILE" ]; then
-  while IFS= read -r pid; do
-    if kill "$pid" 2>/dev/null; then
-      echo "Stopped PID $pid"
-    fi
-  done < "$PID_FILE"
-  rm -f "$PID_FILE"
-else
-  echo "No PID file found. Skipping registered script shutdown."
+# Kill all scripts launched from script_pids.txt
+if [ -f script_pids.txt ]; then
+    while read pid; do
+        kill -9 "$pid" 2>/dev/null
+    done < script_pids.txt
+    > script_pids.txt
 fi
 
-echo ""
-echo "Cleaning up stray Python processes using GPIO..."
-PIDS=$(sudo lsof /dev/gpiochip* 2>/dev/null | awk 'NR>1 {print $2}' | sort -u)
-if [ -z "$PIDS" ]; then
-  echo "No stray GPIO processes found."
-else
-  echo "Found PIDs: $PIDS"
-  sudo kill -9 $PIDS
-  echo "Killed stray GPIO processes."
-fi
+# Additional process cleanup (manual pkill fallback)
+echo "Killing known Python GPIO processes..."
+pkill -f DHT22.py
+pkill -f PIR.py
+pkill -f Semaphore_
+pkill -f infraction_sensor.py
 
-echo ""
-echo "Stopping Docker containers..."
-docker compose down
+# GPIO reset steps
+echo "Resetting GPIO state..."
 
-echo "All systems stopped and cleaned."
+# Attempt soft GPIO chip reset
+sudo lgpiochipctl --chip 0 --reset
+
+# Kill pigpiod if running
+sudo killall pigpiod 2>/dev/null
+
+# Unbind GPIO chip (may fail on some systems, ignore errors)
+echo none | sudo tee /sys/class/gpio/gpiochip0/subsystem/unbind > /dev/null
+sleep 1
+echo 0 | sudo tee /sys/class/gpio/export > /dev/null
+
+echo "All scripts stopped and GPIO cleaned up."

@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1748001868.4292147,
+    "lastUpdate": 1748005678.6835852,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "mqtt.eclipseprojects.io",
@@ -118,7 +118,7 @@
                     "topic_direct": "SmartTrafficLight/Led/A/1"
                 }
             ],
-            "lastUpdate": 1748000162.7416203
+            "lastUpdate": 1748004748.6226242
         },
         {
             "ID": "DHT22_Sensor_01",
@@ -136,7 +136,7 @@
                     "topic_predictor": "SmartTrafficLight/Sensor/A/weather"
                 }
             ],
-            "lastUpdate": 1748001748.228864
+            "lastUpdate": 1748005357.3006024
         },
         {
             "ID": "A_c_1",
@@ -153,7 +153,7 @@
                     "topic_direct": "SmartTrafficLight/Led/A/1"
                 }
             ],
-            "lastUpdate": 1748001749.2223175
+            "lastUpdate": 1748005358.189949
         },
         {
             "ID": "A_p_1",
@@ -170,7 +170,7 @@
                     "topic_direct": "SmartTrafficLight/Led/A/1"
                 }
             ],
-            "lastUpdate": 1748001848.296924
+            "lastUpdate": 1748005647.5469804
         },
         {
             "ID": "A_I_1",
@@ -191,7 +191,47 @@
                     "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "lastUpdate": 1748001850.3175063
+            "lastUpdate": 1748005649.4231799
+        },
+        {
+            "ID": "db_connector_1",
+            "Name": "Database Adaptor",
+            "Type": "Storage",
+            "zone": "N/A",
+            "availableServices": [
+                "REST"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "REST",
+                    "endpoint": "http://database_adaptor:8080/infraction"
+                }
+            ],
+            "lastUpdate": 1748005677.5772495
+        },
+        {
+            "ID": "violation_detector_1",
+            "Name": "Violation Detector",
+            "Type": "Processor",
+            "zone": "N/A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "servicesDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "config": [
+                {
+                    "client_id": "violation_detector",
+                    "mqtt_broker": "mqtt.eclipseprojects.io",
+                    "mqtt_port": 1883,
+                    "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
+                }
+            ],
+            "lastUpdate": 1748005677.7055979
         },
         {
             "ID": 888,
@@ -209,7 +249,7 @@
                     "topic_emergency": "SmartTrafficLight/Emergency"
                 }
             ],
-            "lastUpdate": 1748001858.293309
+            "lastUpdate": 1748005677.7211797
         },
         {
             "ID": "telegram_bot_1",
@@ -243,31 +283,7 @@
                     "channel_id": "2875299"
                 }
             },
-            "lastUpdate": 1748001858.3730943
-        },
-        {
-            "ID": "violation_detector_1",
-            "Name": "Violation Detector",
-            "Type": "Processor",
-            "zone": "N/A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "config": [
-                {
-                    "client_id": "violation_detector",
-                    "mqtt_broker": "mqtt.eclipseprojects.io",
-                    "mqtt_port": 1883,
-                    "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
-                }
-            ],
-            "lastUpdate": 1748001858.4554458
+            "lastUpdate": 1748005677.9207554
         },
         {
             "ID": "predictA",
@@ -283,23 +299,7 @@
                     "topicP": "SmartTrafficLight/LCD/A/roadIcePredictor"
                 }
             ],
-            "lastUpdate": 1748001859.1437373
-        },
-        {
-            "ID": "db_connector_1",
-            "Name": "Database Adaptor",
-            "Type": "Storage",
-            "zone": "N/A",
-            "availableServices": [
-                "REST"
-            ],
-            "servicesDetails": [
-                {
-                    "serviceType": "REST",
-                    "endpoint": "http://database_adaptor:8080/infraction"
-                }
-            ],
-            "lastUpdate": 1748001868.4292054
+            "lastUpdate": 1748005678.6835754
         }
     ]
 }

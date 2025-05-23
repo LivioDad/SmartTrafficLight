@@ -37,10 +37,10 @@
       "ice_warning": 25
     },
     "last_status": {
-      "timestamp": 1748001855.0712552,
+      "timestamp": 1748005652.486844,
       "intersection": "A",
-      "NS": "green_light",
-      "WE": "red_light"
+      "NS": "red_light",
+      "WE": "green_light"
     }
   }
 }
