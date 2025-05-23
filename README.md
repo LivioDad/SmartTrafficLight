@@ -154,7 +154,7 @@ Once the system is started (`./start_system.sh`), the bot becomes accessible at:
 
 > 📅 You can also scan the QR code below to open it directly in Telegram:
 
-![QR Code to SmartTrafficLightBot](assets/telegram_qr_code.png)
+![QR Code to SmartTrafficLightBot](assets/telegram_qr_code.jpg)
 
 ---
 
