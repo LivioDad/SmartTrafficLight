@@ -60,7 +60,7 @@ SmartTrafficLight/
 
 ## ⚖️ Requirements
 
-* Raspberry Pi5 with GPIO (or simulation on desktop)
+* Raspberry Pi5 with GPIO
 * Python 3.8+
 * Docker + Docker Compose
 * Packages:
