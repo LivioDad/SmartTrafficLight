@@ -43,7 +43,6 @@ services:
     volumes:
       - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
       - ./telegram_bot/telegram_bot_info.json:/app/telegram_bot_info.json:ro
-      - ./telegram_bot/Plates_dataset:/app/Plates_dataset
       - ./telegram_bot/charts:/app/charts
     restart: unless-stopped
 
