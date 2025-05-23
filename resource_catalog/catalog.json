@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1747999097.669834,
+    "lastUpdate": 1747999751.1758409,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "mqtt.eclipseprojects.io",
@@ -299,7 +299,7 @@
                     "endpoint": "http://database_adaptor:8080/infraction"
                 }
             ],
-            "lastUpdate": 1747999097.669821
+            "lastUpdate": 1747999751.175831
         }
     ]
 }

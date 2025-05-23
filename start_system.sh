@@ -37,10 +37,10 @@ sleep 1
 python3 violation_detection/infraction_sensor.py > "$LOG_DIR/infraction_sensor.log" 2>&1 &
 echo $! >> "$PID_FILE"
 
-python3 Lights/LED_LCD1.py > "$LOG_DIR/LED_LCD1.log" 2>&1 &
+python3 Semaphores/Semaphore_1.py > "$LOG_DIR/Semaphore_1.log" 2>&1 &
 echo $! >> "$PID_FILE"
 
-python3 Lights/LED_light2.py > "$LOG_DIR/LED_light2.log" 2>&1 &
+python3 Semaphores/Semaphore_2.py > "$LOG_DIR/Semaphore_2.log" 2>&1 &
 echo $! >> "$PID_FILE"
 
 echo "Main scripts started. Logs saved in $LOG_DIR/"
@@ -52,8 +52,9 @@ while true; do
   echo "Optional scripts menu:"
   echo "1. Start emergency_sim.py"
   echo "2. Start ice_risk_sim.py"
-  echo "3. Exit"
-  read -p "Enter your choice [1-3]: " choice
+  echo "3. Add new semaphore"
+  echo "4. Exit"
+  read -p "Enter your choice [1-4]: " choice
 
   case $choice in
     1)
@@ -65,6 +66,10 @@ while true; do
       python3 services/ice_risk_sim.py
       ;;
     3)
+      echo "Launching Add_semaphore.py..."
+      python3 Semaphores/Add_semaphore.py
+      ;;
+    4)
       echo "Exiting optional script menu."
       break
       ;;
