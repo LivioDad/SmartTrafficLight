@@ -150,7 +150,7 @@ The system includes a **Telegram bot** for remote interaction:
 
 Once the system is started (`./start_system.sh`), the bot becomes accessible at:
 
-**[https://t.me/SmartTrafficLightBot](https://t.me/SmartTrafficLightBot)**
+**[https://t.me/Smart_Traffic_Lights_bot](https://t.me/Smart_Traffic_Lights_bot)**
 
 > 📅 You can also scan the QR code below to open it directly in Telegram:
 
