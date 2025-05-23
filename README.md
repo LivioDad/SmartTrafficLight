@@ -183,7 +183,13 @@ MIT License
 
 ## ✉️ Contact
 
-For questions, suggestions, or contributions, open an issue or contact the project maintainer on GitHub.
+For questions, suggestions, or contributions, open an issue or reach out to the authors:
+
+- [**Giovanni Grieco**](mailto:s346012@studenti.polito.it)
+- [**Livio Dadone**](mailto:s347038@studenti.polito.it)
+- [**Mattia Antonini**](mailto:s344064@studenti.polito.it)
+- [**Simone Peradotto**](mailto:s343420@studenti.polito.it)
+
 
 ---
 
