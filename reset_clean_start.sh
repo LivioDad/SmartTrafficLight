@@ -1,6 +1,6 @@
 #!/bin/bash
+./stop_system.sh
 
-echo "Stopping running Docker containers..."
 docker compose down
 
 echo "Removing Docker images related to the project..."
