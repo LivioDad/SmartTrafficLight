@@ -2,3 +2,4 @@ telepot
 requests
 matplotlib
 pytz
+python-dotenv

@@ -4,16 +4,11 @@ from datetime import datetime
 import matplotlib.dates as mdates
 import os
 import json
+from dotenv import load_dotenv
+load_dotenv('/app/.env')
 
-script_dir = os.path.dirname(os.path.abspath(__file__))
-info_path = os.path.join(script_dir, "telegram_bot_info.json")
-
-with open(info_path, "r") as f:
-    info_data = json.load(f)
-
-config = info_data["config"][0]
-thingspeak_api_key = config.get("thingspeak_api_key", "")
-channel_id = info_data["environment_zones"]["a"]["channel_id"] # For the moment it is only configured for zone A
+thingspeak_api_key = os.getenv("THINGSPEAK_READ_KEY")
+channel_id = os.getenv("THINGSPEAK_CHANNEL_ID")
 
 def fetch_thingspeak_data(field, results=50):
     url = f"https://api.thingspeak.com/channels/{channel_id}/fields/{field}.json?api_key={thingspeak_api_key}&results={results}"

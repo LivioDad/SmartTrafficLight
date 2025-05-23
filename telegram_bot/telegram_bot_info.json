@@ -16,15 +16,12 @@
   ],
   "config": [
     {
-      "token": "7900374203:AAFatRVBh56VFv9nphon1gpq5jl9g-PeBRU",
-      "police_password": "its_the_sound_of_da_police",
-      "thingspeak_api_key": "BTP4K708D2767EMW"
+      "police_password": "its_the_sound_of_da_police"
     }
   ],
   "environment_zones": {
     "a": {
-      "name": "Zone A",
-      "channel_id": "2875299"
+      "name": "Zone A"
     }
   }
 }

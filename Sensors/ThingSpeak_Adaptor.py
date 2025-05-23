@@ -4,6 +4,8 @@ from MyMQTT import *
 import time
 import uuid
 import os
+from dotenv import load_dotenv
+load_dotenv('/app/.env')
 
 # This script recieves data from the DHT22 sensor via MQTT and sends it to Thingspeak.
 # Due to Thingspeak limitations on a free plan, it sends the temperature and humidity values alternately every 15 seconds.
@@ -14,8 +16,8 @@ class Thingspeak_Adaptor:
         self.catalogURL=settings['catalogURL']
         self.serviceInfo=settings['serviceInfo']
         self.baseURL=self.settings["ThingspeakURL"]
-        self.channelWriteAPIkey=self.settings["ChannelWriteAPIkey"]
-        self.channelReadAPIkey=self.settings["ChannelReadAPIKey"]
+        self.channelWriteAPIkey = os.getenv("THINGSPEAK_WRITE_KEY")
+        self.channelReadAPIkey = os.getenv("THINGSPEAK_READ_KEY")
         self.broker=self.settings["brokerIP"]
         self.port=self.settings["brokerPort"]
         self.topic=self.settings["mqttTopic"]+"/#"

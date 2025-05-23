@@ -10,6 +10,8 @@ import pytz
 from urllib.parse import urlencode
 from datetime import datetime
 from dynamic_charts import generate_chart
+from dotenv import load_dotenv
+load_dotenv('/app/.env')
 
 def format_date(ts):
     try:
@@ -27,9 +29,10 @@ def convert_to_iso_date(date_str):
         return date_str
 
 class MyBot:
-    def __init__(self, token, service_catalog_info_path, resource_info_path, police_password):
-        self.tokenBot = token
-        self.police_password = police_password
+    def __init__(self, token, service_catalog_info_path, resource_info_path):
+        self.tokenBot = os.getenv("TELEGRAM_BOT_TOKEN")
+        self.police_password = os.getenv("POLICE_PASSWORD")
+        self.thingspeak_api_key = os.getenv("THINGSPEAK_READ_KEY")
 
         with open(service_catalog_info_path) as f:
             catalog_info = json.load(f)
@@ -45,19 +48,17 @@ class MyBot:
 
         # Retrieve data from telegram_bot_info.json
         self.config_data = self.resource_info.get("config", [{}])[0]
-        self.thingspeak_api_key = self.config_data.get("thingspeak_api_key", "")
         raw_zones = self.resource_info.get("environment_zones", {})
         self.environment_zones = {}
 
+        channel_id = os.getenv("THINGSPEAK_CHANNEL_ID")
         for key, zone in raw_zones.items():
-            channel_id = zone["channel_id"]
             self.environment_zones[key.lower()] = {
                 "name": zone["name"],
                 "api_url": f"https://api.thingspeak.com/channels/{channel_id}/feeds.json?api_key={self.thingspeak_api_key}&results=20",
                 "chart_url_temp": f"https://thingspeak.com/channels/{channel_id}/charts/1?bgcolor=%23ffffff&dynamic=true&type=line",
                 "chart_url_hum": f"https://thingspeak.com/channels/{channel_id}/charts/2?bgcolor=%23ffffff&dynamic=true&type=line"
             }
-
 
         self.bot = telepot.Bot(self.tokenBot)
         MessageLoop(self.bot, {'chat': self.on_chat_message, 'callback_query': self.on_callback_query}).run_as_thread()
@@ -409,9 +410,8 @@ if __name__ == "__main__":
 
     config = info_data["config"][0]
     token = config['token']
-    police_password = config['police_password']
 
-    bot = MyBot(token, resource_catalog_path, info_path, police_password)
+    bot = MyBot(token, resource_catalog_path, info_path)
     threading.Thread(target=bot.register_to_catalog, daemon=True).start()
 
     print("Bot is running, access it from this link: https://t.me/Smart_Traffic_Lights_bot")

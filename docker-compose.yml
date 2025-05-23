@@ -40,10 +40,15 @@ services:
       context: ./telegram_bot
       dockerfile: Dockerfile
     container_name: telegram_bot
+    depends_on:
+      - resource_catalog
+    env_file:
+      - ./shared/.env
     volumes:
       - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
       - ./telegram_bot/telegram_bot_info.json:/app/telegram_bot_info.json:ro
       - ./telegram_bot/charts:/app/charts
+      - ./shared/.env:/app/.env:ro
     restart: unless-stopped
 
   thingspeak_adaptor:
@@ -53,8 +58,11 @@ services:
     container_name: thingspeak_adaptor
     depends_on:
       - resource_catalog
+    env_file:
+      - ./shared/.env
     volumes:
       - ./Sensors/ThingSpeak_Adaptor_info.json:/app/ThingSpeak_Adaptor_info.json:ro
+      - ./shared/.env:/app/.env:ro
     restart: unless-stopped
 
   violation_detection:
