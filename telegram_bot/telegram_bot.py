@@ -29,7 +29,7 @@ def convert_to_iso_date(date_str):
         return date_str
 
 class MyBot:
-    def __init__(self, token, service_catalog_info_path, resource_info_path):
+    def __init__(self, service_catalog_info_path, resource_info_path):
         self.tokenBot = os.getenv("TELEGRAM_BOT_TOKEN")
         self.police_password = os.getenv("POLICE_PASSWORD")
         self.thingspeak_api_key = os.getenv("THINGSPEAK_READ_KEY")
@@ -405,13 +405,8 @@ if __name__ == "__main__":
     info_path = "telegram_bot_info.json"
     resource_catalog_path = "resource_catalog_info.json"
 
-    with open(info_path, "r") as f:
-        info_data = json.load(f)
+    bot = MyBot(service_catalog_info_path=resource_catalog_path, resource_info_path=info_path)
 
-    config = info_data["config"][0]
-    token = config['token']
-
-    bot = MyBot(token, resource_catalog_path, info_path)
     threading.Thread(target=bot.register_to_catalog, daemon=True).start()
 
     print("Bot is running, access it from this link: https://t.me/Smart_Traffic_Lights_bot")

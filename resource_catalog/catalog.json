@@ -1,5 +1,5 @@
 {
-    "lastUpdate": 1748005678.6835852,
+    "lastUpdate": 1748010382.0479178,
     "base_topic": "SmartTrafficLight",
     "broker": {
         "name": "mqtt.eclipseprojects.io",
@@ -136,7 +136,7 @@
                     "topic_predictor": "SmartTrafficLight/Sensor/A/weather"
                 }
             ],
-            "lastUpdate": 1748005357.3006024
+            "lastUpdate": 1748009633.4681392
         },
         {
             "ID": "A_c_1",
@@ -153,7 +153,7 @@
                     "topic_direct": "SmartTrafficLight/Led/A/1"
                 }
             ],
-            "lastUpdate": 1748005358.189949
+            "lastUpdate": 1748009634.487342
         },
         {
             "ID": "A_p_1",
@@ -170,7 +170,7 @@
                     "topic_direct": "SmartTrafficLight/Led/A/1"
                 }
             ],
-            "lastUpdate": 1748005647.5469804
+            "lastUpdate": 1748010373.9667814
         },
         {
             "ID": "A_I_1",
@@ -191,7 +191,25 @@
                     "topic_infraction": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "lastUpdate": 1748005649.4231799
+            "lastUpdate": 1748010378.7644157
+        },
+        {
+            "ID": 888,
+            "Name": "LedManagerA",
+            "Type": "LedManager",
+            "zone": "A",
+            "availableServices": [
+                "MQTT"
+            ],
+            "serviceDetails": [
+                {
+                    "serviceType": "MQTT",
+                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
+                    "topic_publish": "SmartTrafficLight/Led/A",
+                    "topic_emergency": "SmartTrafficLight/Emergency"
+                }
+            ],
+            "lastUpdate": 1748010381.130183
         },
         {
             "ID": "db_connector_1",
@@ -207,7 +225,7 @@
                     "endpoint": "http://database_adaptor:8080/infraction"
                 }
             ],
-            "lastUpdate": 1748005677.5772495
+            "lastUpdate": 1748010381.2556465
         },
         {
             "ID": "violation_detector_1",
@@ -231,25 +249,7 @@
                     "mqtt_topic": "SmartTrafficLight/Led/A/redInfraction"
                 }
             ],
-            "lastUpdate": 1748005677.7055979
-        },
-        {
-            "ID": 888,
-            "Name": "LedManagerA",
-            "Type": "LedManager",
-            "zone": "A",
-            "availableServices": [
-                "MQTT"
-            ],
-            "serviceDetails": [
-                {
-                    "serviceType": "MQTT",
-                    "topic_subscribe": "SmartTrafficLight/Sensor/A/#",
-                    "topic_publish": "SmartTrafficLight/Led/A",
-                    "topic_emergency": "SmartTrafficLight/Emergency"
-                }
-            ],
-            "lastUpdate": 1748005677.7211797
+            "lastUpdate": 1748010381.278413
         },
         {
             "ID": "telegram_bot_1",
@@ -272,18 +272,15 @@
             ],
             "config": [
                 {
-                    "token": "7900374203:AAFatRVBh56VFv9nphon1gpq5jl9g-PeBRU",
-                    "police_password": "its_the_sound_of_da_police",
-                    "thingspeak_api_key": "BTP4K708D2767EMW"
+                    "police_password": "its_the_sound_of_da_police"
                 }
             ],
             "environment_zones": {
                 "a": {
-                    "name": "Zone A",
-                    "channel_id": "2875299"
+                    "name": "Zone A"
                 }
             },
-            "lastUpdate": 1748005677.9207554
+            "lastUpdate": 1748010381.7867765
         },
         {
             "ID": "predictA",
@@ -299,7 +296,7 @@
                     "topicP": "SmartTrafficLight/LCD/A/roadIcePredictor"
                 }
             ],
-            "lastUpdate": 1748005678.6835754
+            "lastUpdate": 1748010382.0479107
         }
     ]
 }
