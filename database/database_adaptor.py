@@ -9,7 +9,7 @@ from urllib.parse import parse_qs
 
 # Dynamically set the database path
 script_dir = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(script_dir, "infraction_database.db")
+DB_PATH = os.path.join(script_dir, "database.db")
 
 @cherrypy.tools.json_out()
 class DatabaseAdaptor:

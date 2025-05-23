@@ -17,7 +17,7 @@ services:
     ports:
       - "8081:8081"
     volumes:
-      - ./database/infraction_database.db:/app/infraction_database.db
+      - ./database/database.db:/app/database.db
       - ./shared/resource_catalog_info.json:/app/resource_catalog_info.json:ro
       - ./database/database_adaptor_info.json:/app/database_adaptor_info.json:ro
     restart: unless-stopped
