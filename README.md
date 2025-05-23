@@ -24,7 +24,7 @@ This system simulates and manages a network of smart semaphores using:
 * Environmental response (e.g. ice risk via sensor simulation)
 * Vehicle infraction detection (e.g. passing on red)
 * Real-time display via LCD
-* Telegram bot integration (not detailed here)
+* Telegram bot integration for remote queries and reports
 * Dynamic semaphore creation via terminal interface
 
 ---
@@ -43,7 +43,7 @@ SmartTrafficLight/
 ├── start_system.sh         # Main launcher with interactive menu
 ├── stop_system.sh          # Stop all scripts and Docker
 ├── add_semaphore.py        # Add new semaphore from terminal
-├── docker-compose.yml      # Services: resource_catalog, database_adaptor
+├── docker-compose.yml      # Services: resource_catalog, database_adaptor, telegram_bot
 ```
 
 ---
@@ -85,7 +85,7 @@ To launch everything:
 
 This will:
 
-1. Start Docker containers (resource\_catalog, database\_adaptor)
+1. Start Docker containers (resource\_catalog, database\_adaptor, telegram\_bot)
 2. Start main sensors and semaphore scripts
 3. Show interactive menu for optional components
 
@@ -137,6 +137,24 @@ curl -X POST http://localhost:8080/infraction \
 The **resource catalog** (running in Docker) is a key component of service discovery in this system. Every script (sensor, actuator, or service) registers itself with the catalog by periodically sending a `PUT` request with its metadata. This enables dynamic discovery of available services and brokers by other components, reducing hard-coded configuration.
 
 The catalog runs at `http://<host>:9090/` and stores all live services with their type, name, zone, IP, and topics.
+
+---
+
+## 📢 Telegram Bot
+
+The system includes a **Telegram bot** for remote interaction:
+
+* Query recent infractions by plate or zone
+* Get real-time environment data from sensors (e.g. temperature, humidity)
+* Export results as CSV
+
+Once the system is started (`./start_system.sh`), the bot becomes accessible at:
+
+**[https://t.me/SmartTrafficLightBot](https://t.me/SmartTrafficLightBot)**
+
+> 📅 You can also scan the QR code below to open it directly in Telegram:
+
+![QR Code to SmartTrafficLightBot](assets/telegram_qr_code.png)
 
 ---
 
