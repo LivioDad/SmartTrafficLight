@@ -76,6 +76,16 @@ The SmartTrafficLight system is based on a distributed edge architecture where e
 | `ThingSpeak_Adaptor.py` | pushes sensor data to ThingSpeak via HTTP POST |
 
 ---
+#### 🌐 Adapters and HTTP
+
+Two adapter components play a specific role in HTTP-based communication:
+
+- `database_adaptor.py`: acts as a local HTTP server receiving `POST` requests from other modules (e.g., violation detection) and writing data into a SQLite database.
+- `ThingSpeak_Adaptor.py`: acts as an HTTP client that transforms internal MQTT messages into remote `POST` requests toward the public ThingSpeak API.
+
+These adapters serve as bridges between internal MQTT-based communication and external or persistent HTTP-based systems.
+
+---
 
 ### 🧠 Edge-Distributed Architecture
 
