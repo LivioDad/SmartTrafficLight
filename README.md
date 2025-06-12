@@ -29,6 +29,68 @@ This system simulates and manages a network of smart semaphores using:
 
 ---
 
+## 📡 IoT Communication Protocols
+
+The SmartTrafficLight system is based on a distributed edge architecture where each node (traffic light, sensor, actuator) communicates using standard IoT protocols.
+
+### 🔄 MQTT (Message Queuing Telemetry Transport)
+
+- Used for lightweight, asynchronous communication between modules.
+- Managed via a central MQTT broker whose address is dynamically obtained from the `resource_catalog`.
+- Topics follow a structured hierarchy:
+  ```
+  SmartTrafficLight/<category>/<zone>/<event>
+  ```
+
+#### 📤 Main Publishers
+| Module | Event Published |
+|--------|------------------|
+| `Button.py` | pedestrian button pressed |
+| `PIR.py` | motion detected |
+| `DHT22.py` | temperature and humidity |
+| `infraction_sensor.py` | traffic violation |
+| `led_manager.py` | command messages to traffic lights (mode, duration, etc.) |
+
+#### 📥 Main Subscribers
+| Module | Topic Subscribed |
+|--------|------------------|
+| `led_manager.py` | listens to events from sensors, buttons, simulations |
+| `Semaphore_X.py` | listens to commands and ice warnings |
+| `ThingSpeak_Adaptor.py` | listens to sensor measurements |
+| `violation_detection.py` | listens to violation data |
+
+---
+
+### 🌐 HTTP
+
+- Used for node registration and broker discovery.
+- Each module performs:
+  - `GET /broker` → to retrieve the broker IP/port
+  - `PUT /registerResource` → to register itself to the catalog
+
+#### 🔁 HTTP Usage Summary
+| Module | Purpose |
+|--------|---------|
+| All edge modules (e.g., `Button.py`, `DHT22.py`, `Semaphore_1.py`) | retrieve broker and register to catalog |
+| `database_adaptor.py` | receives data via HTTP POST |
+| `ThingSpeak_Adaptor.py` | pushes sensor data to ThingSpeak via HTTP POST |
+
+---
+
+### 🧠 Edge-Distributed Architecture
+
+Each traffic light node:
+- subscribes to MQTT commands
+- processes logic autonomously
+- updates its state independently
+
+This ensures:
+- ⚡ Low latency
+- 🔁 High resilience to disconnections
+- 🧩 Modular scalability
+
+---
+
 ## 📂 Project Structure
 
 ```
@@ -45,17 +107,6 @@ SmartTrafficLight/
 ├── add_semaphore.py        # Add new semaphore from terminal
 ├── docker-compose.yml      # Services: resource_catalog, database_adaptor, telegram_bot
 ```
-
----
-
-## 📁 Database
-
-* **File**: `database/database.db`
-* **Tables**:
-
-  * `violations`: stores infractions (plate, timestamp, station)
-  * `semaphores`: stores semaphores with zone and active services (as JSON)
-
 ---
 
 ## ⚖️ Requirements
@@ -116,31 +167,6 @@ It will:
 
 ---
 
-## 🌐 Web Interface (Optional)
-
-The `database_adaptor` exposes REST APIs on port `8080`:
-
-* `GET /infraction`: query violations
-* `POST /infraction`: add a violation
-
-Example:
-
-```bash
-curl -X POST http://localhost:8080/infraction \
-     -H "Content-Type: application/json" \
-     -d '{"plate": "ABC123", "date": "1747990000", "station": 2}'
-```
-
----
-
-## 📊 Catalog Service
-
-The **resource catalog** (running in Docker) is a key component of service discovery in this system. Every script (sensor, actuator, or service) registers itself with the catalog by periodically sending a `PUT` request with its metadata. This enables dynamic discovery of available services and brokers by other components, reducing hard-coded configuration.
-
-The catalog runs at `http://<host>:9090/` and stores all live services with their type, name, zone, IP, and topics.
-
----
-
 ## 📢 Telegram Bot
 
 The system includes a **Telegram bot** for remote interaction:
@@ -156,6 +182,25 @@ Once the system is started (`./start_system.sh`), the bot becomes accessible at:
 > 📅 You can also scan the QR code below to open it directly in Telegram:
 
 ![QR Code to SmartTrafficLightBot](assets/telegram_qr_code.jpg)
+
+---
+
+## 📊 Catalog Service
+
+The **resource catalog** (running in Docker) is a key component of service discovery in this system. Every script (sensor, actuator, or service) registers itself with the catalog by periodically sending a `PUT` request with its metadata. This enables dynamic discovery of available services and brokers by other components, reducing hard-coded configuration.
+
+The catalog runs at `http://<host>:9090/` and stores all live services with their type, name, zone, IP, and topics.
+
+
+---
+
+## 📁 Database
+
+* **File**: `database/database.db`
+* **Tables**:
+
+  * `violations`: stores infractions (plate, timestamp, station)
+  * `semaphores`: stores semaphores with zone and active services (as JSON)
 
 ---
 
