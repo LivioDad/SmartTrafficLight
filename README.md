@@ -67,7 +67,7 @@ SmartTrafficLight/
 
   * `gpiozero`, `paho-mqtt`, `requests`, `sqlite3`, `cherrypy`, `lgpio`, `adafruit-circuitpython-dht`, `blinka`
 
-The installation is automatically done at start, but you can separately install them via:
+The installation is automatically done at start, but you can run the installation separately via:
 
 ```bash
 ./install_requirements.sh
@@ -77,7 +77,8 @@ The installation is automatically done at start, but you can separately install 
 
 ## 🔄 Running the System
 
-To launch everything:
+Remember to compile the .env file in the "shared" folder before starting the system!
+After that, to launch everything:
 
 ```bash
 ./start_system.sh
