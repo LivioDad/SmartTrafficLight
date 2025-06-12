@@ -1,5 +1,5 @@
 {
-    "broker": "192.168.1.18",
+    "broker": "resource_catalog",
     "broker_port": 1883,
     "ip_address":"resource_catalog",
     "ip_port": "9090",
